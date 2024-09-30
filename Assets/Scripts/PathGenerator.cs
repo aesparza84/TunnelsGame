@@ -4,31 +4,43 @@ using UnityEngine;
 
 public class PathGenerator : MonoBehaviour
 {
-    [SerializeField] private GameObject FourWay;
-    [SerializeField] private GameObject ThreeWay;
-    [SerializeField] private GameObject Path;
-    [SerializeField] private GameObject End;
+    [Header("Map Info")]
+    [SerializeField] private int Width = 10;
+    [SerializeField] private int Height = 10;
+    [SerializeField] private float SpaceBetween = 1; //in meters
 
-    private void Update()
+    //[Header("Map Prefabs")]
+    //[SerializeField] private GameObject Straight;
+    //[SerializeField] private GameObject ThreeDoor;
+    //[SerializeField] private GameObject FourDoor;
+    //[SerializeField] private GameObject EndPlug;
+
+    [SerializeField] private GameObject sphere;
+
+    //For choosing piece
+    private int choice;
+
+    private Transform[,] Nodes;
+
+    private void Start()
     {
-        if (Input.GetKeyDown(KeyCode.W))
-        {
-            Instantiate(Path, transform.position, transform.rotation);
-        }
-        else if (Input.GetKeyDown(KeyCode.A))
-        {
-            Instantiate(FourWay, transform.position, transform.rotation);
+        Nodes = new Transform[Width, Height];
 
-        }
-        else if (Input.GetKeyDown(KeyCode.S))
-        {
-            Instantiate(ThreeWay, transform.position, transform.rotation);
+        GenerateMap();
+    }
 
-        }
-        else if (Input.GetKeyDown(KeyCode.D))
+    private void GenerateMap()
+    {
+        for (int i = 0; i < Height; i++)
         {
-            Instantiate(End, transform.position, transform.rotation);
+            for(int j = 0; j < Width; j++)
+            {
+                GameObject p = new GameObject();
+                GameObject inst = Instantiate(p, transform.position, transform.rotation);
+                inst.transform.position += new Vector3(j * SpaceBetween, 0, i * SpaceBetween);
 
+                GameObject o = Instantiate(sphere, inst.transform.position, transform.rotation);
+            }
         }
     }
 }
