@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public enum OpeningSide {N, E, S, W, NONE }
@@ -15,14 +17,14 @@ public class Node
 
     public int Y;
 
-    public OpeningSide NextEntranceSide;
+    public OpeningSide EntranceSide;
 
     public Roominfo _roominfo;
     public Node(int x, int y, OpeningSide OpeningNeeded, Roominfo roominfo)
     {
         X = x;
         Y = y;
-        NextEntranceSide = OpeningNeeded;
+        EntranceSide = OpeningNeeded;
 
         _roominfo = roominfo;
     }
@@ -30,7 +32,7 @@ public class Node
     {
         X = x;
         Y = y;
-        NextEntranceSide = OpeningNeeded;
+        EntranceSide = OpeningNeeded;
     }
     public Node(int x, int y, Roominfo roominfo)
     {
@@ -38,6 +40,12 @@ public class Node
         Y = y;
         _roominfo = roominfo;
     }
+}
+
+public struct GridPoint
+{
+    public int X;
+    public int Y;
 }
 public class PathGenerator : MonoBehaviour
 {
@@ -65,12 +73,13 @@ public class PathGenerator : MonoBehaviour
     private List<Node> _nodes;
     private Stack<Node> _nodeStack;
 
+    private List<GridPoint> VisitedNodes;
     private void Start()
     {
         _transforms = new Transform[Width, Height];
         _nodes = new List<Node>();
         _nodeStack = new Stack<Node>();
-        
+        VisitedNodes = new List<GridPoint>();
 
         RecursiveCap = Width * Height;
         CurrentI = 0;
@@ -101,48 +110,47 @@ public class PathGenerator : MonoBehaviour
         GameObject n = S_Openings[4];
         Instantiate(n, _transforms[startPosX, startPosY].position, Quaternion.identity);
 
-        SpawnRooms(new Node(startPosX, startPosY, OpeningSide.S, n.GetComponent<Roominfo>()));
+        SpawnRooms(new Node(startPosX, startPosY, n.GetComponent<Roominfo>()));
     }
 
     private bool CheckValidPoint(int x, int y)
     {
         return (x >= 0 && x <= Width) && (y >=0 && y <= Height);
     }
-    private void SpawnRooms(Node _node)
+    private void SpawnRooms(Node currentNode)
     {
         if (CurrentI > RecursiveCap)
             return;
 
-        if (_nodeStack.Count > 0)
-        {
-            int stackCount = _nodeStack.Count;
-            for (int i = 0; i < stackCount; i++)
-            {
-                _nodes.Add(_nodeStack.Peek());
-                _nodeStack.Pop();
-            }
-
-            _nodeStack.Clear();
-        }
-
         CurrentI++;
 
-        int currentX = _node.X;
-        int currentY = _node.Y;
+        //First we get the current position in grid
+        int currentX = currentNode.X;
+        int currentY = currentNode.Y;
 
-        //Generate Initial Room
-        //GameObject n = N_Openings[4];
-        //Instantiate(n, _transforms[currentX, currentY].position, n.transform.rotation);
+        GridPoint p;
+        p.X = currentX;
+        p.Y = currentY;
 
+        if (!VisitedNodes.Contains(p))
+        {
+            VisitedNodes.Add(p);
+        }
+        else
+        {
+            return;
+        }
+        
 
-        Roominfo room = _node._roominfo;
-        //Exit side(s): N
-        //Exit side(s): N, W, S
+        //Then we see what kind of exits we have (N, S, W exit...) at this node
+        Roominfo room = currentNode._roominfo;
 
+        //If node has an exit at 'X-side' check if we can move further.
+        //If so, then add that node to the List<Node> of nodes to affect
         if (room.ExitSides.Contains(OpeningSide.N))
         {
-            if (CheckValidPoint(currentX, currentY - 1))
-                _nodes.Add(new Node(currentX, currentY - 1, OpeningSide.S));
+            if (CheckValidPoint(currentX, currentY + 1))
+                _nodes.Add(new Node(currentX, currentY + 1, OpeningSide.S));
         }
         if (room.ExitSides.Contains(OpeningSide.E))
         {
@@ -152,8 +160,8 @@ public class PathGenerator : MonoBehaviour
         }
         if (room.ExitSides.Contains(OpeningSide.S))
         {
-            if (CheckValidPoint(currentX, currentY + 1))
-                _nodes.Add(new Node(currentX, currentY + 1, OpeningSide.N));
+            if (CheckValidPoint(currentX, currentY - 1))
+                _nodes.Add(new Node(currentX, currentY - 1, OpeningSide.N));
 
         }
         if (room.ExitSides.Contains(OpeningSide.W))
@@ -162,28 +170,30 @@ public class PathGenerator : MonoBehaviour
                 _nodes.Add(new Node(currentX - 1, currentY, OpeningSide.E));
         }
 
+
+        //For each node we added, add a piece that has entrance on side 'X'
         int choice;
-        foreach (Node node in _nodes)
-        {
-            choice = Random.Range(0, 6);
+        foreach (Node newNode in _nodes)
+        {           
+            choice = UnityEngine.Random.Range(0, 5);
             GameObject nextRoom = null;
 
-            switch (node.NextEntranceSide)
+            switch (newNode.EntranceSide)
             {
                 case OpeningSide.N:
-                    nextRoom = Instantiate(N_Openings[choice], new Vector3(node.X,0,node.Y), Quaternion.identity);
+                    nextRoom = Instantiate(N_Openings[choice], _transforms[newNode.X, newNode.Y].position, N_Openings[choice].transform.rotation);
 
                     break;
                 case OpeningSide.E:
-                    nextRoom = Instantiate(E_Openings[choice], new Vector3(node.X,0,node.Y), Quaternion.identity);
+                    nextRoom = Instantiate(E_Openings[choice], _transforms[newNode.X, newNode.Y].position, E_Openings[choice].transform.rotation);
 
                     break;
                 case OpeningSide.S:
-                    nextRoom = Instantiate(S_Openings[choice], new Vector3(node.X,0,node.Y), Quaternion.identity);
+                    nextRoom = Instantiate(S_Openings[choice], _transforms[newNode.X, newNode.Y].position, S_Openings[choice].transform.rotation);
 
                     break;
                 case OpeningSide.W:
-                    nextRoom = Instantiate(W_Openings[choice], new Vector3(node.X,0,node.Y), Quaternion.identity);
+                    nextRoom = Instantiate(W_Openings[choice], _transforms[newNode.X, newNode.Y].position, W_Openings[choice].transform.rotation);
 
                     break;
                 case OpeningSide.NONE:
@@ -192,9 +202,15 @@ public class PathGenerator : MonoBehaviour
                     break;
             }
 
-            _nodeStack.Push(new Node(node.X, node.Y, nextRoom.GetComponent<Roominfo>()));
+            _nodeStack.Push(new Node(newNode.X, newNode.Y, nextRoom.GetComponent<Roominfo>()));
         }
 
         _nodes.Clear();
+
+        if (_nodeStack.Count > 0)
+        {
+            SpawnRooms(_nodeStack.Pop());
+        }
+
     }
 }
