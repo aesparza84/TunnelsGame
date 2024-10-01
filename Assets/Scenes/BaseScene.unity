@@ -475,9 +475,22 @@ MonoBehaviour:
   - {fileID: 5113362421601486665, guid: c2f70bae2f017fd409fbf1132fb92e9a, type: 3}
   - {fileID: 6127901873439269779, guid: f89c9d4b65f58a54aab86be65a674178, type: 3}
   - {fileID: 5032757740925279097, guid: 6b2f2f81bf6fa1c4cb14e2f73a21ab33, type: 3}
+  N_Borders:
+  - {fileID: 8409450065514099195, guid: 2aa50f2a395685643998d85220574c21, type: 3}
+  - {fileID: 4943862674353034091, guid: 76d7575b8d5ba5c419eb058f86fb2287, type: 3}
+  E_Borders:
+  - {fileID: 621015580372112903, guid: 63a5b7e24d74fd24ca70ed4dd9153353, type: 3}
+  - {fileID: 5032757740925279097, guid: 6b2f2f81bf6fa1c4cb14e2f73a21ab33, type: 3}
+  S_Borders:
+  - {fileID: 8409450065514099195, guid: 647c5c7b117be0949b0dd235464d6574, type: 3}
+  - {fileID: 4943862674353034091, guid: b8d26d5976bf83442bc3e86370e146ab, type: 3}
+  W_Borders:
+  - {fileID: 621015580372112903, guid: 2ad464d00d8ec5a46b204dfd3f8e8627, type: 3}
+  - {fileID: 5032757740925279097, guid: f5743e701e2951b44b100dce94d3f5c2, type: 3}
   startPosX: 5
-  startPosY: 0
+  startPosY: 5
   sphere: {fileID: 357239604}
+  RecursiveCap: 100
 --- !u!4 &1310262108
 Transform:
   m_ObjectHideFlags: 0
@@ -487,7 +500,7 @@ Transform:
   m_GameObject: {fileID: 1310262106}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 16, y: 0, z: 0}
+  m_LocalPosition: {x: 2, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

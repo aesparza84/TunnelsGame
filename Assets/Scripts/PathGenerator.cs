@@ -41,11 +41,20 @@ public class Node
         _roominfo = roominfo;
     }
 }
-
-public struct GridPoint
+public class GridNode
 {
-    public int X;
-    public int Y;
+    public Transform _transform;
+    public bool Visited;
+
+    public GridNode()
+    {
+        Visited = false;
+    }
+
+    public void VisitNode()
+    {
+        Visited = true;
+    }
 }
 public class PathGenerator : MonoBehaviour
 {
@@ -60,28 +69,35 @@ public class PathGenerator : MonoBehaviour
     [SerializeField] private List<GameObject> S_Openings;
     [SerializeField] private List<GameObject> W_Openings;
 
+    [Header("Map Borders")]
+    [SerializeField] private List<GameObject> N_Borders;
+    [SerializeField] private List<GameObject> E_Borders;
+    [SerializeField] private List<GameObject> S_Borders;
+    [SerializeField] private List<GameObject> W_Borders;
+
     [Header("Start Position")]
     [SerializeField] private int startPosX;
     [SerializeField] private int startPosY;
 
     [SerializeField] private GameObject sphere;
 
-    private int RecursiveCap;
+    [SerializeField] private int RecursiveCap;
     private int CurrentI;
 
     private Transform[,] _transforms;
+
+    private GridNode[,] _gridNodes;
     private List<Node> _nodes;
     private Stack<Node> _nodeStack;
 
-    private List<GridPoint> VisitedNodes;
     private void Start()
     {
         _transforms = new Transform[Width, Height];
+
+        _gridNodes = new GridNode[Width, Height];
         _nodes = new List<Node>();
         _nodeStack = new Stack<Node>();
-        VisitedNodes = new List<GridPoint>();
 
-        RecursiveCap = Width * Height;
         CurrentI = 0;
 
         GenerateGrid();
@@ -94,12 +110,20 @@ public class PathGenerator : MonoBehaviour
         {
             for(int j = 0; j < Width; j++)
             {
-                GameObject p = new GameObject();
+                //Initialize Gridnode to add
+                GridNode node = new GridNode();
+                GameObject p = new GameObject(); //Empty GameObject transform
+
                 GameObject inst = Instantiate(p, transform.position, transform.rotation);
                 inst.transform.position += new Vector3(j * SpaceBetween, 0, i * SpaceBetween);
 
-                _transforms[j, i] = inst.transform;
+                node._transform = inst.transform;
+                _gridNodes[j,i] = node;
 
+                //_transforms[j, i] = inst.transform;
+
+
+                //Debug for sphere
                 GameObject o = Instantiate(sphere, inst.transform.position, transform.rotation);
             }
         }
@@ -108,16 +132,15 @@ public class PathGenerator : MonoBehaviour
     private void GenerateMapPieces()
     {
         GameObject n = S_Openings[4];
-        Instantiate(n, _transforms[startPosX, startPosY].position, Quaternion.identity);
+        //Instantiate(n, _transforms[startPosX, startPosY].position, Quaternion.identity);
+        Instantiate(n, _gridNodes[startPosX, startPosY]._transform.position, Quaternion.identity);
+        _gridNodes[startPosX, startPosY].VisitNode();
 
         SpawnRooms(new Node(startPosX, startPosY, n.GetComponent<Roominfo>()));
     }
 
-    private bool CheckValidPoint(int x, int y)
-    {
-        return (x >= 0 && x <= Width) && (y >=0 && y <= Height);
-    }
-    private void SpawnRooms(Node currentNode)
+    
+    private void SpawnRooms(Node currentRoomNode)
     {
         if (CurrentI > RecursiveCap)
             return;
@@ -125,28 +148,16 @@ public class PathGenerator : MonoBehaviour
         CurrentI++;
 
         //First we get the current position in grid
-        int currentX = currentNode.X;
-        int currentY = currentNode.Y;
-
-        GridPoint p;
-        p.X = currentX;
-        p.Y = currentY;
-
-        if (!VisitedNodes.Contains(p))
-        {
-            VisitedNodes.Add(p);
-        }
-        else
-        {
-            return;
-        }
+        int currentX = currentRoomNode.X;
+        int currentY = currentRoomNode.Y;
         
 
         //Then we see what kind of exits we have (N, S, W exit...) at this node
-        Roominfo room = currentNode._roominfo;
+        Roominfo room = currentRoomNode._roominfo;
 
         //If node has an exit at 'X-side' check if we can move further.
-        //If so, then add that node to the List<Node> of nodes to affect
+        //If so, then add that node to the List<Node> of nodes to affect.
+        //If a node has been visited OR out of bounds, skip.
         if (room.ExitSides.Contains(OpeningSide.N))
         {
             if (CheckValidPoint(currentX, currentY + 1))
@@ -181,19 +192,23 @@ public class PathGenerator : MonoBehaviour
             switch (newNode.EntranceSide)
             {
                 case OpeningSide.N:
-                    nextRoom = Instantiate(N_Openings[choice], _transforms[newNode.X, newNode.Y].position, N_Openings[choice].transform.rotation);
+                    //nextRoom = Instantiate(N_Openings[choice], _transforms[newNode.X, newNode.Y].position, N_Openings[choice].transform.rotation);
+                    nextRoom = Instantiate(N_Openings[choice], _gridNodes[newNode.X, newNode.Y]._transform.position, N_Openings[choice].transform.rotation);
 
                     break;
                 case OpeningSide.E:
-                    nextRoom = Instantiate(E_Openings[choice], _transforms[newNode.X, newNode.Y].position, E_Openings[choice].transform.rotation);
+                    //nextRoom = Instantiate(E_Openings[choice], _transforms[newNode.X, newNode.Y].position, E_Openings[choice].transform.rotation);
+                    nextRoom = Instantiate(E_Openings[choice], _gridNodes[newNode.X, newNode.Y]._transform.position, E_Openings[choice].transform.rotation);
 
                     break;
                 case OpeningSide.S:
-                    nextRoom = Instantiate(S_Openings[choice], _transforms[newNode.X, newNode.Y].position, S_Openings[choice].transform.rotation);
+                    //nextRoom = Instantiate(S_Openings[choice], _transforms[newNode.X, newNode.Y].position, S_Openings[choice].transform.rotation);
+                    nextRoom = Instantiate(S_Openings[choice], _gridNodes[newNode.X, newNode.Y]._transform.position, S_Openings[choice].transform.rotation);
 
                     break;
                 case OpeningSide.W:
-                    nextRoom = Instantiate(W_Openings[choice], _transforms[newNode.X, newNode.Y].position, W_Openings[choice].transform.rotation);
+                    //nextRoom = Instantiate(W_Openings[choice], _transforms[newNode.X, newNode.Y].position, W_Openings[choice].transform.rotation);
+                    nextRoom = Instantiate(W_Openings[choice], _gridNodes[newNode.X, newNode.Y]._transform.position, W_Openings[choice].transform.rotation);
 
                     break;
                 case OpeningSide.NONE:
@@ -201,6 +216,8 @@ public class PathGenerator : MonoBehaviour
                 default:
                     break;
             }
+
+            _gridNodes[newNode.X, newNode.Y].VisitNode();
 
             _nodeStack.Push(new Node(newNode.X, newNode.Y, nextRoom.GetComponent<Roominfo>()));
         }
@@ -213,4 +230,9 @@ public class PathGenerator : MonoBehaviour
         }
 
     }
+    private bool CheckValidPoint(int x, int y)
+    {
+        return (x >= 0 && x < Width) && (y >= 0 && y < Height) && !_gridNodes[x,y].Visited;
+    }
 }
+
