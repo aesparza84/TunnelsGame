@@ -1,0 +1,207 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.ProBuilder.Shapes;
+
+public class PathGenDFS : MonoBehaviour
+{
+    [Header("Base Room Prefab")]
+    [SerializeField] private GameObject AdjustablePrefab;
+
+    [Header("Map Info")]
+    [SerializeField] private int Width = 10;
+    [SerializeField] private int Height = 10;
+    [SerializeField] private float SpaceBetween = 1; //in meters
+
+    [Header("Start Position")]
+    [SerializeField] private int startPosX;
+    [SerializeField] private int startPosY;
+    [SerializeField] private int RecursiveCap;
+    private int CurrentI;
+
+    private GridNode[,] _gridNodes;
+    private List<Node> _nodes;
+    private Stack<Node> branchingNodes;
+
+    [Header("Debug")]
+    [SerializeField] private GameObject sphere;
+    void Start()
+    {
+        _gridNodes = new GridNode[Width, Height];
+        _nodes = new List<Node>();
+        branchingNodes = new Stack<Node>();
+        
+        CurrentI = 0;
+
+        GenerateGrid();
+
+        CreateRoomsDFS(startPosX, startPosY, OpeningSide.NONE, false);
+    }
+    private void GenerateGrid()
+    {
+        for (int i = 0; i < Height; i++)
+        {
+            for (int j = 0; j < Width; j++)
+            {
+                //Initialize Gridnode to add
+                GridNode node = new GridNode();
+                GameObject p = new GameObject(); //Empty GameObject transform
+
+                GameObject inst = Instantiate(p, transform.position, transform.rotation);
+                inst.transform.position += new Vector3(j * SpaceBetween, 0, i * SpaceBetween);
+
+                node._transform = inst.transform;
+                _gridNodes[j, i] = node;
+
+                inst.transform.SetParent(transform);
+                //_transforms[j, i] = inst.transform;
+
+
+                //Debug for sphere
+                GameObject o = Instantiate(sphere, inst.transform.position, transform.rotation);
+            }
+        }
+    }
+    private void CreateRoomsDFS(int X, int Y, OpeningSide branchingFrom, bool returning)
+    {
+        if (CurrentI > RecursiveCap)
+        {
+            return;
+        }
+
+        CurrentI++;
+
+        AdjustRoom r = null; //Room reference
+
+        if (!returning)
+        {
+            //Instantiate the room at (X,Y). Default Room Exits/Entrances
+            GameObject n = Instantiate(AdjustablePrefab, _gridNodes[X, Y]._transform.position, AdjustablePrefab.transform.rotation);
+            r = n.GetComponent<AdjustRoom>();
+
+            //Cut out entrance from previous Node's direction, if applicable
+            if (branchingFrom != OpeningSide.NONE)
+            {
+                switch (branchingFrom)
+                {
+                    case OpeningSide.N:
+                        r.SetEntrance(OpeningSide.N);
+
+                        break;
+                    case OpeningSide.E:
+                        r.SetEntrance(OpeningSide.E);
+
+                        break;
+                    case OpeningSide.S:
+                        r.SetEntrance(OpeningSide.S);
+
+                        break;
+                    case OpeningSide.W:
+                        r.SetEntrance(OpeningSide.W);
+
+                        break;
+                    case OpeningSide.NONE:
+
+                        break;
+                    default:
+                        break;
+                }
+
+                r.CutOutDoors();
+            }
+
+            //Visit the current node we are in
+            _gridNodes[X, Y].VisitNode();
+            _gridNodes[X, Y].SetRoomObj(n);
+        }
+        
+
+        
+
+        //Check for valid neighboring nodes
+        List<Node> n_nodes = CheckNodeneighbors(X, Y);
+
+        if (r == null)
+        {
+            r = _gridNodes[X, Y].Room.GetComponent<AdjustRoom>();
+        }
+
+        //If this Nodes branches, push to stack for checkpoint
+        if (n_nodes.Count > 0)
+        {            
+            branchingNodes.Push(new Node(X, Y, branchingFrom));
+
+            int choice = UnityEngine.Random.Range(0, n_nodes.Count);
+
+            Node nextNode = n_nodes[choice];
+
+            switch (nextNode.EntranceSide)
+            {
+                case OpeningSide.N:
+                    r.SetExits(new OpeningSide[] { OpeningSide.S });
+
+                    break;
+                case OpeningSide.E:
+                    r.SetExits(new OpeningSide[] { OpeningSide.W });
+
+                    break;
+                case OpeningSide.S:
+                    r.SetExits(new OpeningSide[] { OpeningSide.N });
+
+                    break;
+                case OpeningSide.W:
+                    r.SetExits(new OpeningSide[] { OpeningSide.E });
+
+                    break;
+                case OpeningSide.NONE:
+                    break;
+                default:
+                    break;
+            }
+
+            r.CutOutDoors();
+
+            Debug.Log($"Next ({nextNode.X}, {nextNode.Y} | {nextNode.EntranceSide})");
+            CreateRoomsDFS(nextNode.X, nextNode.Y, nextNode.EntranceSide, false);
+        }
+        
+        if (branchingNodes != null && branchingNodes.Count > 0)
+        {            
+            Debug.Log("Going back to last branch node");
+            Node node = branchingNodes.Pop();
+            CreateRoomsDFS(node.X, node.Y, node.EntranceSide, true);
+        }
+    }
+
+    private List<Node> CheckNodeneighbors(int X, int Y)
+    {
+        List<Node> neighbors = new List<Node>();
+
+        //Check N/E/S/W
+
+        if (CheckValidPoint(X,Y + 1)) //North
+        {
+            neighbors.Add(new Node(X, Y+1, OpeningSide.S));
+        }
+        if (CheckValidPoint(X + 1, Y)) //East
+        {
+            neighbors.Add(new Node(X + 1, Y, OpeningSide.W));
+        }
+        if (CheckValidPoint(X, Y - 1)) //South
+        {
+            neighbors.Add(new Node(X, Y - 1, OpeningSide.N));
+
+        }
+        if (CheckValidPoint(X - 1, Y)) //West
+        {
+            neighbors.Add(new Node(X - 1, Y, OpeningSide.E));
+
+        }
+        return neighbors;
+    }
+
+    private bool CheckValidPoint(int x, int y)
+    {
+        return (x >= 0 && x < Width) && (y >= 0 && y < Height) && !_gridNodes[x, y].Visited;
+    }
+}

@@ -45,7 +45,7 @@ public class GridNode
 {
     public Transform _transform;
     public bool Visited;
-
+    public GameObject Room;
     public GridNode()
     {
         Visited = false;
@@ -54,6 +54,11 @@ public class GridNode
     public void VisitNode()
     {
         Visited = true;
+    }
+
+    public void SetRoomObj(GameObject newRoom)
+    {
+        Room = newRoom;
     }
 }
 public class PathGenerator : MonoBehaviour
@@ -74,6 +79,12 @@ public class PathGenerator : MonoBehaviour
     [SerializeField] private List<GameObject> E_Borders;
     [SerializeField] private List<GameObject> S_Borders;
     [SerializeField] private List<GameObject> W_Borders;
+
+    [Header("Map Corners")]
+    [SerializeField] private GameObject NE_Corner;
+    [SerializeField] private GameObject SE_Corner;
+    [SerializeField] private GameObject SW_Corner;
+    [SerializeField] private GameObject NW_Corner;
 
     [Header("Start Position")]
     [SerializeField] private int startPosX;
@@ -186,6 +197,7 @@ public class PathGenerator : MonoBehaviour
         int choice;
         foreach (Node newNode in _nodes)
         {           
+            
             choice = UnityEngine.Random.Range(0, 5);
             GameObject nextRoom = null;
 
