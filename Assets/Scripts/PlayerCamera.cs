@@ -12,9 +12,12 @@ public class PlayerCamera : MonoBehaviour
     [Header("Camera Lean Angles")]
     [SerializeField] private float LeftAngle;
     [SerializeField] private float RightAngle;
-    [SerializeField] private float LeanTime;
-    private float currentLeanTime;
-    private float TargetAngle;
+    [SerializeField] private float LeanSpeed;
+    private float Z_TargetAngle;
+
+    private Vector3 TargetEuler;
+
+    private bool Lean;
 
     //Controller reference
     private PlayerController _playerController;
@@ -26,6 +29,9 @@ public class PlayerCamera : MonoBehaviour
 
         _playerController.OnRight += OnRightArm;
         _playerController.OnLeft += OnLeftArm;
+
+        //Set initial lean side
+        LeanCamera(_playerController.CurrentArm);   
     }
 
     private void OnLeftArm(object sender, System.EventArgs e)
@@ -39,16 +45,19 @@ public class PlayerCamera : MonoBehaviour
 
     private void LeanCamera(Side leanSide)
     {
-        currentLeanTime = 0.0f;
+        //If currently leaning, dont lean again
+        if (Lean)
+            return;
 
+        //Set Target lean angle
         switch (leanSide)
         {
             case Side.LEFT:
-                TargetAngle = LeftAngle;
+                Z_TargetAngle = LeftAngle;
 
                 break;
             case Side.RIGHT:
-                TargetAngle = RightAngle;
+                Z_TargetAngle = RightAngle;
 
                 break;
             case Side.NONE:
@@ -56,17 +65,33 @@ public class PlayerCamera : MonoBehaviour
             default:
                 break;
         }
+
+        TargetEuler.z = Z_TargetAngle;
+
+        //_cameraTransform.localRotation = Quaternion.Euler(0, 0, TargetAngle);
+
+        Lean = true;
     }
 
     private void Update()
     {
-        //if (currentLeanTime < LeanTime)
-        //{
-        //    _cameraTransform.localRotation = Quaternion.Lerp(_cameraTransform.localRotation,
-        //                                                Quaternion.Euler(0, TargetAngle, 0),
-        //                                                LeanTime * Time.deltaTime);
-        //}
+        HandleLeaning();
     }
+
+    private void HandleLeaning()
+    {
+        if (Lean)
+        {
+            _cameraTransform.localRotation = Quaternion.Lerp(_cameraTransform.localRotation, Quaternion.Euler(TargetEuler), LeanSpeed);
+
+            if (_cameraTransform.localRotation == Quaternion.Euler(TargetEuler))
+            {
+                _cameraTransform.localRotation = Quaternion.RotateTowards(_cameraTransform.localRotation, Quaternion.Euler(TargetEuler), 100);
+                Lean = false;
+            }
+        }
+    }
+
     private void OnDisable()
     {
         _playerController.OnRight -= OnRightArm;

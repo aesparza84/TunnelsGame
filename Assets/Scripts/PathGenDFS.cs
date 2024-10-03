@@ -19,7 +19,10 @@ public class PathGenDFS : MonoBehaviour
     [SerializeField] private int RecursiveCap;
     private int CurrentI;
 
+    //Map componenets
     private GridNode[,] _gridNodes;
+    public GridNode[,] GridNodes { get { return _gridNodes; } } //Property readonly
+
     private List<Node> _nodes;
     private Stack<Node> branchingNodes;
 
@@ -36,6 +39,8 @@ public class PathGenDFS : MonoBehaviour
         GenerateGrid();
 
         CreateRoomsDFS(startPosX, startPosY, OpeningSide.NONE, false);
+
+        int n = 1;
     }
     private void GenerateGrid()
     {

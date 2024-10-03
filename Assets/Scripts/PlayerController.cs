@@ -17,20 +17,36 @@ public class PlayerController : MonoBehaviour
     private InputAction TurnRight;
 
     private Side currentArm;
+    public Side CurrentArm { get { return currentArm; } }
 
+
+    //Player movement
+    [SerializeField] private float MoveSpeed;
+    private Vector3 TargetPos;
+
+    //Camera info, distance percent
+    private Vector3 startPos;
+    private float startDistance;
+    private float percentMoved;
+
+    //Player turning
     [SerializeField] private float TurnTime;
-    private float currentTurnTime;
     private Vector3 TargetRotation;
+
 
     //Arm Crawl Events
     public event EventHandler OnLeft;
     public event EventHandler OnRight;
 
+    private bool Turning;
+    private bool Moving;
+
     private void Start()
     {
+        //Start on Left side
         currentArm = Side.LEFT;
-        currentTurnTime = 0.0f;
-        TargetRotation = Vector3.zero;
+
+        TargetRotation = transform.localRotation.eulerAngles;
     }
     private void OnEnable()
     {
@@ -58,12 +74,10 @@ public class PlayerController : MonoBehaviour
     private void OnRightCrawl(InputAction.CallbackContext obj)
     {
         Crawl(Side.RIGHT);
-        OnRight?.Invoke(this, EventArgs.Empty);
     }
     private void OnLeftCrawl(InputAction.CallbackContext obj)
     {
         Crawl(Side.LEFT);
-        OnLeft?.Invoke(this, EventArgs.Empty);
     }
     private void OnTurnLeft(InputAction.CallbackContext obj)
     {
@@ -76,13 +90,26 @@ public class PlayerController : MonoBehaviour
 
     private void Crawl(Side side)
     {
+        //If currently moving or turning, dont move
+        if (Moving || Turning)
+            return;
+
+        //Set the target position
+        TargetPos = transform.position + (transform.forward).normalized;
+
+        //Info for camera.
+        startPos = transform.position;
+        startDistance = Vector3.Distance(transform.position, TargetPos);
+
+        //Only move when input matches side
         switch (currentArm)
         {
             case Side.LEFT:
                 if (side == Side.LEFT)
                 {
-                    transform.localPosition += transform.forward;
+                    OnLeft?.Invoke(this, EventArgs.Empty);
 
+                    Moving = true;
                     currentArm = Side.RIGHT;
                 }
 
@@ -90,8 +117,9 @@ public class PlayerController : MonoBehaviour
             case Side.RIGHT:
                 if (side == Side.RIGHT)
                 {
-                    transform.localPosition += transform.forward;
+                    OnRight?.Invoke(this, EventArgs.Empty);
 
+                    Moving = true;
                     currentArm = Side.LEFT;  
                 }
 
@@ -105,18 +133,19 @@ public class PlayerController : MonoBehaviour
 
     private void Turn(Side newTurn)
     {
-        //Reset Turn timer
-        currentTurnTime = 0.0f;
+        //If currently moving or turning, dont move
+        if (Moving || Turning)
+            return;
         
         //Set new target rotation
         switch (newTurn)
         {
             case Side.LEFT:
-                TargetRotation = transform.localEulerAngles + new Vector3(0, -90, 0);
+                TargetRotation += new Vector3(0, -90.0f, 0);
 
                 break;
             case Side.RIGHT:
-                TargetRotation = transform.localEulerAngles + new Vector3(0, 90, 0);
+                TargetRotation += new Vector3(0, 90.0f, 0);
 
                 break;
             case Side.NONE:
@@ -124,29 +153,67 @@ public class PlayerController : MonoBehaviour
             default:
                 break;
         }
+
+        if (Mathf.Abs(TargetRotation.y) == 360)
+        {
+            TargetRotation.y = 0;
+        }
+
+        Turning = true; 
     }
 
     private void Update()
     {
-        if (currentTurnTime < TurnTime)
+        HandleRotation();
+        HandleMovement();
+    }
+
+    private void HandleRotation()
+    {
+        if (Turning)
         {
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, 
+            transform.rotation = Quaternion.RotateTowards(transform.rotation,
                                                           Quaternion.Euler(TargetRotation),
-                                                          TurnTime * Time.deltaTime);
+                                                          TurnTime);
+
+            if (transform.rotation == Quaternion.Euler(TargetRotation))
+            {
+                transform.rotation = Quaternion.RotateTowards(transform.rotation,
+                                                          Quaternion.Euler(TargetRotation),
+                                                          100);
+                Turning = false;
+            }
+        }
+    }
+
+    private void HandleMovement()
+    {
+        if (Moving)
+        {
+            if (transform.position != TargetPos)
+            {
+                transform.position = Vector3.MoveTowards(transform.position, TargetPos, MoveSpeed);
+            }
+
+            if (transform.position == TargetPos)
+            {
+                Moving = false;
+            }            
         }
     }
 
     private void OnDisable()
     {
+        //Disable controls
         LeftArm.Disable();
         RightArm.Disable();
         TurnLeft.Disable();
         TurnRight.Disable();
 
+        //Unsubscirbe events
         LeftArm.started -= OnLeftCrawl;
         RightArm.started -= OnRightCrawl;
         TurnLeft.started -= OnTurnLeft;
         TurnRight.started -= OnTurnRight;
-
     }
 }
