@@ -19,6 +19,8 @@ public class PlayerController : MonoBehaviour
     private Side currentArm;
     public Side CurrentArm { get { return currentArm; } }
 
+    //Readonly player direction
+    public OpeningSide FacingDirection { get; private set; }
 
     //Player movement
     [SerializeField] private float MoveSpeed;
@@ -38,6 +40,10 @@ public class PlayerController : MonoBehaviour
     public event EventHandler OnLeft;
     public event EventHandler OnRight;
 
+    //Move event
+    public event EventHandler<Tuple<OpeningSide, Side>> OnMove; //Facing-Dir, Arm side
+    [SerializeField] private bool MapMove;
+
     private bool Turning;
     private bool Moving;
 
@@ -47,6 +53,8 @@ public class PlayerController : MonoBehaviour
         currentArm = Side.LEFT;
 
         TargetRotation = transform.localRotation.eulerAngles;
+
+        CompassDirection(Vector3.Dot(transform.forward, Vector3.forward));
     }
     private void OnEnable()
     {
@@ -73,11 +81,41 @@ public class PlayerController : MonoBehaviour
 
     private void OnRightCrawl(InputAction.CallbackContext obj)
     {
-        Crawl(Side.RIGHT);
+        //accept no input when moving
+        if (Moving)
+            return;
+
+        Moving = true;
+
+        if (MapMove)
+        {
+            Tuple<OpeningSide, Side> info = new Tuple<OpeningSide, Side>(FacingDirection, Side.RIGHT);
+
+            OnMove?.Invoke(this, info);
+        }
+        else
+        {
+            Crawl(Side.RIGHT);
+        }
     }
     private void OnLeftCrawl(InputAction.CallbackContext obj)
     {
-        Crawl(Side.LEFT);
+        //accept no input when moving
+        if (Moving)
+            return;
+
+        Moving = true;
+
+        if (MapMove)
+        {
+            Tuple<OpeningSide, Side> info = new Tuple<OpeningSide, Side>(FacingDirection, Side.LEFT);
+
+            OnMove?.Invoke(this, info);
+        }
+        else
+        {
+            Crawl(Side.LEFT);
+        }
     }
     private void OnTurnLeft(InputAction.CallbackContext obj)
     {
@@ -88,18 +126,15 @@ public class PlayerController : MonoBehaviour
         Turn(Side.RIGHT);
     }
 
-    private void Crawl(Side side)
-    {
-        //If currently moving or turning, dont move
-        if (Moving || Turning)
-            return;
+    public bool Crawl( Side side)
+    {    
 
-        //Set the target position
-        TargetPos = transform.position + (transform.forward).normalized;
+        //Set the target position 
+        //Mapmove = node movement
+        //!Mapmove = free movement
+        if (!MapMove)
+            TargetPos = transform.position + (transform.forward).normalized;
 
-        //Info for camera.
-        startPos = transform.position;
-        startDistance = Vector3.Distance(transform.position, TargetPos);
 
         //Only move when input matches side
         switch (currentArm)
@@ -108,9 +143,9 @@ public class PlayerController : MonoBehaviour
                 if (side == Side.LEFT)
                 {
                     OnLeft?.Invoke(this, EventArgs.Empty);
-
-                    Moving = true;
                     currentArm = Side.RIGHT;
+
+                    return true;
                 }
 
                 break;
@@ -118,9 +153,9 @@ public class PlayerController : MonoBehaviour
                 if (side == Side.RIGHT)
                 {
                     OnRight?.Invoke(this, EventArgs.Empty);
+                    currentArm = Side.LEFT;
 
-                    Moving = true;
-                    currentArm = Side.LEFT;  
+                    return true;
                 }
 
                 break;
@@ -129,6 +164,8 @@ public class PlayerController : MonoBehaviour
             default:
                 break;
         }
+
+        return false;
     }
 
     private void Turn(Side newTurn)
@@ -136,7 +173,7 @@ public class PlayerController : MonoBehaviour
         //If currently moving or turning, dont move
         if (Moving || Turning)
             return;
-        
+
         //Set new target rotation
         switch (newTurn)
         {
@@ -154,13 +191,20 @@ public class PlayerController : MonoBehaviour
                 break;
         }
 
+
+        //Limit rotation values |0 > x > 270|
         if (Mathf.Abs(TargetRotation.y) == 360)
         {
             TargetRotation.y = 0;
         }
 
-        Turning = true; 
+        //Set READONLY facing direction
+
+        Turning = true;
     }
+    
+    
+   
 
     private void Update()
     {
@@ -182,10 +226,36 @@ public class PlayerController : MonoBehaviour
                                                           Quaternion.Euler(TargetRotation),
                                                           100);
                 Turning = false;
+
+                CompassDirection(Vector3.Dot(transform.forward, Vector3.forward));
             }
         }
     }
+    //Determine direction, DOT
+    private void CompassDirection(float dot)
+    {
+        dot = Mathf.Round(dot);
 
+        if (Mathf.Approximately(dot, 0.0f))
+        {
+            if (transform.localRotation.eulerAngles.y == 90)
+            {
+                FacingDirection = OpeningSide.E;
+            }
+            else
+            {
+                FacingDirection = OpeningSide.W;
+            }
+        }
+        else if (Mathf.Approximately(dot, 1.0f))
+        {
+            FacingDirection = OpeningSide.N;
+        }
+        else if (Mathf.Approximately(dot, -1.0f))
+        {
+            FacingDirection = OpeningSide.S;
+        }
+    }
     private void HandleMovement()
     {
         if (Moving)
@@ -200,6 +270,12 @@ public class PlayerController : MonoBehaviour
                 Moving = false;
             }            
         }
+    }
+
+    //For External classes
+    public void SetTargetPos(Vector3 tar)
+    {
+        TargetPos = tar;
     }
 
     private void OnDisable()

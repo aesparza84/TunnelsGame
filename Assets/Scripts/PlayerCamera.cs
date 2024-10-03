@@ -68,8 +68,6 @@ public class PlayerCamera : MonoBehaviour
 
         TargetEuler.z = Z_TargetAngle;
 
-        //_cameraTransform.localRotation = Quaternion.Euler(0, 0, TargetAngle);
-
         Lean = true;
     }
 

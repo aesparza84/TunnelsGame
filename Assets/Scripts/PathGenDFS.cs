@@ -3,6 +3,71 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.ProBuilder.Shapes;
 
+public enum OpeningSide { N, E, S, W, NONE }
+
+/// <summary>
+/// X - Position X
+/// Y - Position Y
+/// Entrance - Next opening needed 
+/// </summary>
+public class Node
+{
+    public int X;
+
+    public int Y;
+
+    public OpeningSide EntranceSide;
+
+    public Roominfo _roominfo;
+    public Node(int x, int y, OpeningSide OpeningNeeded, Roominfo roominfo)
+    {
+        X = x;
+        Y = y;
+        EntranceSide = OpeningNeeded;
+
+        _roominfo = roominfo;
+    }
+    public Node(int x, int y, OpeningSide OpeningNeeded)
+    {
+        X = x;
+        Y = y;
+        EntranceSide = OpeningNeeded;
+    }
+    public Node(int x, int y, Roominfo roominfo)
+    {
+        X = x;
+        Y = y;
+        _roominfo = roominfo;
+    }
+}
+public class GridNode
+{
+    public Transform _transform;
+    public bool Visited;
+
+    public bool SpawnNode;
+
+    public Point gridPoint;
+
+    public GameObject Room;
+    public GridNode()
+    {
+        gridPoint = new Point(0, 0);
+        Visited = false;
+    }
+
+    public void VisitNode(int x, int y)
+    {
+        gridPoint.X = x;
+        gridPoint.Y = y;
+        Visited = true;
+    }
+
+    public void SetRoomObj(GameObject newRoom)
+    {
+        Room = newRoom;
+    }
+}
 public class PathGenDFS : MonoBehaviour
 {
     [Header("Base Room Prefab")]
@@ -21,14 +86,17 @@ public class PathGenDFS : MonoBehaviour
 
     //Map componenets
     private GridNode[,] _gridNodes;
+    public GridNode SpawnNode { get; private set; }
+
     public GridNode[,] GridNodes { get { return _gridNodes; } } //Property readonly
 
     private List<Node> _nodes;
     private Stack<Node> branchingNodes;
 
+
     [Header("Debug")]
     [SerializeField] private GameObject sphere;
-    void Start()
+    void Awake()
     {
         _gridNodes = new GridNode[Width, Height];
         _nodes = new List<Node>();
@@ -39,8 +107,6 @@ public class PathGenDFS : MonoBehaviour
         GenerateGrid();
 
         CreateRoomsDFS(startPosX, startPosY, OpeningSide.NONE, false);
-
-        int n = 1;
     }
     private void GenerateGrid()
     {
@@ -84,6 +150,8 @@ public class PathGenDFS : MonoBehaviour
             GameObject n = Instantiate(AdjustablePrefab, _gridNodes[X, Y]._transform.position, AdjustablePrefab.transform.rotation);
             r = n.GetComponent<AdjustRoom>();
 
+            
+
             //Cut out entrance from previous Node's direction, if applicable
             if (branchingFrom != OpeningSide.NONE)
             {
@@ -116,8 +184,14 @@ public class PathGenDFS : MonoBehaviour
             }
 
             //Visit the current node we are in
-            _gridNodes[X, Y].VisitNode();
+            _gridNodes[X, Y].VisitNode(X, Y);
             _gridNodes[X, Y].SetRoomObj(n);
+
+            //If this is the first node created
+            if (CurrentI == 1)
+            {
+                SpawnNode = _gridNodes[X, Y];
+            }
         }
         
 
@@ -166,13 +240,13 @@ public class PathGenDFS : MonoBehaviour
 
             r.CutOutDoors();
 
-            Debug.Log($"Next ({nextNode.X}, {nextNode.Y} | {nextNode.EntranceSide})");
+            //Debug.Log($"Next ({nextNode.X}, {nextNode.Y} | {nextNode.EntranceSide})");
             CreateRoomsDFS(nextNode.X, nextNode.Y, nextNode.EntranceSide, false);
         }
         
         if (branchingNodes != null && branchingNodes.Count > 0)
         {            
-            Debug.Log("Going back to last branch node");
+            //Debug.Log("Going back to last branch node");
             Node node = branchingNodes.Pop();
             CreateRoomsDFS(node.X, node.Y, node.EntranceSide, true);
         }
@@ -208,5 +282,19 @@ public class PathGenDFS : MonoBehaviour
     private bool CheckValidPoint(int x, int y)
     {
         return (x >= 0 && x < Width) && (y >= 0 && y < Height) && !_gridNodes[x, y].Visited;
+    }
+
+    //Public for map traversal
+    public bool CheckForExistingRoom(int x, int y)
+    {
+        //First chcek if we are in bounds
+        if (!CheckForInBounds(x, y))
+            return false;
+
+        return _gridNodes[x, y].Visited;
+    }
+    private bool CheckForInBounds(int x, int y)
+    {
+        return (x >= 0 && x < Width) && (y >= 0 && y < Height);
     }
 }

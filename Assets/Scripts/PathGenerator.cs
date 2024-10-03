@@ -4,63 +4,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public enum OpeningSide {N, E, S, W, NONE }
 
-/// <summary>
-/// X - Position X
-/// Y - Position Y
-/// Entrance - Next opening needed 
-/// </summary>
-public class Node
-{
-    public int X;
-
-    public int Y;
-
-    public OpeningSide EntranceSide;
-
-    public Roominfo _roominfo;
-    public Node(int x, int y, OpeningSide OpeningNeeded, Roominfo roominfo)
-    {
-        X = x;
-        Y = y;
-        EntranceSide = OpeningNeeded;
-
-        _roominfo = roominfo;
-    }
-    public Node(int x, int y, OpeningSide OpeningNeeded)
-    {
-        X = x;
-        Y = y;
-        EntranceSide = OpeningNeeded;
-    }
-    public Node(int x, int y, Roominfo roominfo)
-    {
-        X = x;
-        Y = y;
-        _roominfo = roominfo;
-    }
-}
-public class GridNode
-{
-    public Transform _transform;
-    public bool Visited;
-    public GameObject Room;
-    public GridNode()
-    {
-        Visited = false;
-    }
-
-    public void VisitNode()
-    {
-        Visited = true;
-    }
-
-    public void SetRoomObj(GameObject newRoom)
-    {
-        Room = newRoom;
-    }
-}
 public class PathGenerator : MonoBehaviour
 {
     [Header("Map Info")]
@@ -145,7 +89,7 @@ public class PathGenerator : MonoBehaviour
         GameObject n = S_Openings[4];
         //Instantiate(n, _transforms[startPosX, startPosY].position, Quaternion.identity);
         Instantiate(n, _gridNodes[startPosX, startPosY]._transform.position, Quaternion.identity);
-        _gridNodes[startPosX, startPosY].VisitNode();
+        _gridNodes[startPosX, startPosY].VisitNode(startPosX, startPosY);
 
         SpawnRooms(new Node(startPosX, startPosY, n.GetComponent<Roominfo>()));
     }
@@ -229,7 +173,7 @@ public class PathGenerator : MonoBehaviour
                     break;
             }
 
-            _gridNodes[newNode.X, newNode.Y].VisitNode();
+            _gridNodes[newNode.X, newNode.Y].VisitNode(newNode.X, newNode.Y);
 
             _nodeStack.Push(new Node(newNode.X, newNode.Y, nextRoom.GetComponent<Roominfo>()));
         }

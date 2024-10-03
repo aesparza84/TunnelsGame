@@ -177,7 +177,7 @@ public class AdjustablePathGenerator : MonoBehaviour
         r.CutOutDoors();
 
         //Mark current node 'Visited'
-        _gridNodes[X, Y].VisitNode();
+        _gridNodes[X, Y].VisitNode(startPosX, startPosY);
 
         //If node has an exit at 'X-side' check if we can move further.
         //If so, then add that node to the stack<Node> of nodes to affect.
