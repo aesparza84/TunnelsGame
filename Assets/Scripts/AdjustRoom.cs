@@ -1,8 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
-
+using System.Diagnostics;
+using System;
 public enum RoomLayout { STR, LEFT, RIGHT, T, FOUR, DEADEND}
 public class AdjustRoom : MonoBehaviour
 {
@@ -15,27 +15,24 @@ public class AdjustRoom : MonoBehaviour
     [Header("Desired Layout")]
     [SerializeField] private OpeningSide EntranceSide;
     [SerializeField] private OpeningSide[] ExitSides;
+    private int ExitCount;
 
     //Side that this room is branching from
     public OpeningSide BranchingFrom;
-    private void Start()
+
+    private bool HasHappened;
+    public bool BadRoom { get; private set; }
+    private void Awake()
     {
         EntranceSide = OpeningSide.NONE;
         ExitSides = new OpeningSide[] { OpeningSide.NONE };
+        ExitCount = 0;
     }
     //Public Methods
     public void SetEntrance(OpeningSide side)
     {
         EntranceSide = side;
-    }
 
-    public void SetExits(OpeningSide[] Exits)
-    {
-        ExitSides = Exits;
-    }
-
-    public void CutOutDoors()
-    {
         switch (EntranceSide)
         {
             case OpeningSide.N:
@@ -60,25 +57,60 @@ public class AdjustRoom : MonoBehaviour
             default:
                 break;
         }
+    }
+
+    public void SetExits(OpeningSide[] Exits)
+    {
+        ExitSides = Exits;
 
         foreach (OpeningSide side in ExitSides)
         {
+
+            if (!HasHappened)
+            {
+                HasHappened = true;
+            }
+            else
+            {
+
+            }
+
             switch (side)
             {
                 case OpeningSide.N:
-                    N_Wall.SetActive(false);
+
+                    if (N_Wall.activeInHierarchy)
+                    {
+                        N_Wall.SetActive(false);
+                        ExitCount++;
+                    }
 
                     break;
                 case OpeningSide.E:
-                    E_Wall.SetActive(false);
+                    if (E_Wall.activeInHierarchy)
+                    {
+                        E_Wall.SetActive(false);
+                        ExitCount++;
+                    }
+
 
                     break;
                 case OpeningSide.S:
-                    S_Wall.SetActive(false);
+                    if (S_Wall.activeInHierarchy)
+                    {
+                        S_Wall.SetActive(false);
+                        ExitCount++;
+                    }
+
+
 
                     break;
                 case OpeningSide.W:
-                    W_Wall.SetActive(false);
+                    if (W_Wall.activeInHierarchy)
+                    {
+                        W_Wall.SetActive(false);
+                        ExitCount++;
+                    }
 
                     break;
                 case OpeningSide.NONE:
@@ -88,5 +120,9 @@ public class AdjustRoom : MonoBehaviour
                     break;
             }
         }
+    }
+    public bool HasZeroExits()
+    {
+        return ExitCount < 1;
     }
 }

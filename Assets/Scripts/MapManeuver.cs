@@ -39,6 +39,10 @@ public class MapManeuver : MonoBehaviour
     [Header("Movement Mask")]
     [SerializeField] private LayerMask HitLayermask;
 
+    [Header("DEBUG")]
+    [SerializeField] private int X;
+    [SerializeField] private int Y;
+
     private void Start()
     {
         if (_pathGenerator == null)
@@ -54,7 +58,9 @@ public class MapManeuver : MonoBehaviour
         {
             MovePlayerToNode(_pathGenerator.SpawnNode);
         }
+
     }
+
 
     private void OnEnable()
     {
@@ -132,7 +138,17 @@ public class MapManeuver : MonoBehaviour
 
     }
 
+    private void Update()
+    {
+        if (Map != null)
+        {
+            if (Map[X, Y] != null)
+            {
+                Debug.Log(Map[X, Y].HasZeroExits());
+            }
+        }
 
+    }
 
     //Unsubscribe
     private void OnDisable()

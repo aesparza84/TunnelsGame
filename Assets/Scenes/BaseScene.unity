@@ -139,7 +139,7 @@ GameObject:
   m_Icon: {fileID: 6519382022992737161, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &205522
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -589,6 +589,8 @@ MonoBehaviour:
   HitLayermask:
     serializedVersion: 2
     m_Bits: 192
+  X: 5
+  Y: 5
 --- !u!1 &1121424630
 GameObject:
   m_ObjectHideFlags: 0

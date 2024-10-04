@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -17,27 +18,16 @@ public class Node
     public int Y;
 
     public OpeningSide EntranceSide;
-
-    public Roominfo _roominfo;
-    public Node(int x, int y, OpeningSide OpeningNeeded, Roominfo roominfo)
-    {
-        X = x;
-        Y = y;
-        EntranceSide = OpeningNeeded;
-
-        _roominfo = roominfo;
-    }
     public Node(int x, int y, OpeningSide OpeningNeeded)
     {
         X = x;
         Y = y;
         EntranceSide = OpeningNeeded;
     }
-    public Node(int x, int y, Roominfo roominfo)
+    public Node(int x, int y)
     {
         X = x;
         Y = y;
-        _roominfo = roominfo;
     }
 }
 public class GridNode
@@ -49,7 +39,9 @@ public class GridNode
 
     public Point gridPoint;
 
-    public GameObject Room;
+    public GameObject RoomObj;
+
+    public AdjustRoom roomInfo;
     public GridNode()
     {
         gridPoint = new Point(0, 0);
@@ -63,9 +55,19 @@ public class GridNode
         Visited = true;
     }
 
+    public void SetRoomInfo(AdjustRoom r)
+    {
+        roomInfo = r;
+    }
+
     public void SetRoomObj(GameObject newRoom)
     {
-        Room = newRoom;
+        RoomObj = newRoom;
+    }
+
+    public bool HasZeroExits()
+    {
+        return roomInfo.HasZeroExits();
     }
 }
 public class PathGenDFS : MonoBehaviour
@@ -93,7 +95,6 @@ public class PathGenDFS : MonoBehaviour
     private List<Node> _nodes;
     private Stack<Node> branchingNodes;
 
-
     [Header("Debug")]
     [SerializeField] private GameObject sphere;
     void Awake()
@@ -108,6 +109,8 @@ public class PathGenDFS : MonoBehaviour
 
         CreateRoomsDFS(startPosX, startPosY, OpeningSide.NONE, false);
     }
+
+
     private void GenerateGrid()
     {
         for (int i = 0; i < Height; i++)
@@ -142,15 +145,15 @@ public class PathGenDFS : MonoBehaviour
 
         CurrentI++;
 
-        AdjustRoom r = null; //Room reference
+        //AdjustRoom r = null; //Room reference
 
         if (!returning)
         {
             //Instantiate the room at (X,Y). Default Room Exits/Entrances
             GameObject n = Instantiate(AdjustablePrefab, _gridNodes[X, Y]._transform.position, AdjustablePrefab.transform.rotation);
-            r = n.GetComponent<AdjustRoom>();
+            _gridNodes[X,Y].SetRoomInfo(n.GetComponent<AdjustRoom>());
 
-            
+
 
             //Cut out entrance from previous Node's direction, if applicable
             if (branchingFrom != OpeningSide.NONE)
@@ -158,19 +161,19 @@ public class PathGenDFS : MonoBehaviour
                 switch (branchingFrom)
                 {
                     case OpeningSide.N:
-                        r.SetEntrance(OpeningSide.N);
+                        _gridNodes[X, Y].roomInfo.SetEntrance(OpeningSide.N);
 
                         break;
                     case OpeningSide.E:
-                        r.SetEntrance(OpeningSide.E);
+                        _gridNodes[X, Y].roomInfo.SetEntrance(OpeningSide.E);
 
                         break;
                     case OpeningSide.S:
-                        r.SetEntrance(OpeningSide.S);
+                        _gridNodes[X, Y].roomInfo.SetEntrance(OpeningSide.S);
 
                         break;
                     case OpeningSide.W:
-                        r.SetEntrance(OpeningSide.W);
+                        _gridNodes[X, Y].roomInfo.SetEntrance(OpeningSide.W);
 
                         break;
                     case OpeningSide.NONE:
@@ -180,7 +183,7 @@ public class PathGenDFS : MonoBehaviour
                         break;
                 }
 
-                r.CutOutDoors();
+                //r.CutOutDoors();
             }
 
             //Visit the current node we are in
@@ -200,9 +203,9 @@ public class PathGenDFS : MonoBehaviour
         //Check for valid neighboring nodes
         List<Node> n_nodes = CheckNodeneighbors(X, Y);
 
-        if (r == null)
+        if (_gridNodes[X,Y] == null)
         {
-            r = _gridNodes[X, Y].Room.GetComponent<AdjustRoom>();
+            _gridNodes[X,Y].SetRoomInfo(_gridNodes[X, Y].RoomObj.GetComponent<AdjustRoom>());
         }
 
         //If this Nodes branches, push to stack for checkpoint
@@ -217,19 +220,19 @@ public class PathGenDFS : MonoBehaviour
             switch (nextNode.EntranceSide)
             {
                 case OpeningSide.N:
-                    r.SetExits(new OpeningSide[] { OpeningSide.S });
+                    _gridNodes[X,Y].roomInfo.SetExits(new OpeningSide[] { OpeningSide.S });
 
                     break;
                 case OpeningSide.E:
-                    r.SetExits(new OpeningSide[] { OpeningSide.W });
+                    _gridNodes[X, Y].roomInfo.SetExits(new OpeningSide[] { OpeningSide.W });
 
                     break;
                 case OpeningSide.S:
-                    r.SetExits(new OpeningSide[] { OpeningSide.N });
+                    _gridNodes[X, Y].roomInfo.SetExits(new OpeningSide[] { OpeningSide.N });
 
                     break;
                 case OpeningSide.W:
-                    r.SetExits(new OpeningSide[] { OpeningSide.E });
+                    _gridNodes[X, Y].roomInfo.SetExits(new OpeningSide[] { OpeningSide.E });
 
                     break;
                 case OpeningSide.NONE:
@@ -238,7 +241,7 @@ public class PathGenDFS : MonoBehaviour
                     break;
             }
 
-            r.CutOutDoors();
+            //_gridNodes[X, Y].roomInfo.CutOutDoors();
 
             //Debug.Log($"Next ({nextNode.X}, {nextNode.Y} | {nextNode.EntranceSide})");
             CreateRoomsDFS(nextNode.X, nextNode.Y, nextNode.EntranceSide, false);
