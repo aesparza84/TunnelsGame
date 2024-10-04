@@ -46,6 +46,8 @@ public class PlayerController : MonoBehaviour
 
     private bool Turning;
     private bool Moving;
+    private const float InputCoolDown = 0.3f;
+    private float currentCoolDown;
 
     private void Start()
     {
@@ -55,6 +57,8 @@ public class PlayerController : MonoBehaviour
         TargetRotation = transform.localRotation.eulerAngles;
 
         CompassDirection(Vector3.Dot(transform.forward, Vector3.forward));
+
+        currentCoolDown = InputCoolDown;
     }
     private void OnEnable()
     {
@@ -81,11 +85,8 @@ public class PlayerController : MonoBehaviour
 
     private void OnRightCrawl(InputAction.CallbackContext obj)
     {
-        //accept no input when moving
-        if (Moving)
+        if (!InputsChilled())
             return;
-
-        Moving = true;
 
         if (MapMove)
         {
@@ -97,14 +98,13 @@ public class PlayerController : MonoBehaviour
         {
             Crawl(Side.RIGHT);
         }
+
+        currentCoolDown = 0.0f;
     }
     private void OnLeftCrawl(InputAction.CallbackContext obj)
     {
-        //accept no input when moving
-        if (Moving)
+        if (!InputsChilled())
             return;
-
-        Moving = true;
 
         if (MapMove)
         {
@@ -116,6 +116,8 @@ public class PlayerController : MonoBehaviour
         {
             Crawl(Side.LEFT);
         }
+
+        currentCoolDown = 0.0f;
     }
     private void OnTurnLeft(InputAction.CallbackContext obj)
     {
@@ -126,8 +128,10 @@ public class PlayerController : MonoBehaviour
         Turn(Side.RIGHT);
     }
 
-    public bool Crawl( Side side)
-    {    
+    public bool Crawl(Side side)
+    {
+        if (Moving || Turning)
+            return false;
 
         //Set the target position 
         //Mapmove = node movement
@@ -145,6 +149,7 @@ public class PlayerController : MonoBehaviour
                     OnLeft?.Invoke(this, EventArgs.Empty);
                     currentArm = Side.RIGHT;
 
+                    Moving = true;
                     return true;
                 }
 
@@ -155,6 +160,7 @@ public class PlayerController : MonoBehaviour
                     OnRight?.Invoke(this, EventArgs.Empty);
                     currentArm = Side.LEFT;
 
+                    Moving = true;
                     return true;
                 }
 
@@ -208,6 +214,11 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        if (currentCoolDown < InputCoolDown)
+        {
+            currentCoolDown += Time.deltaTime;
+        }
+
         HandleRotation();
         HandleMovement();
     }
@@ -270,6 +281,12 @@ public class PlayerController : MonoBehaviour
                 Moving = false;
             }            
         }
+    }
+
+    //To prevent move spam
+    private bool InputsChilled()
+    {
+        return currentCoolDown >= InputCoolDown;
     }
 
     //For External classes

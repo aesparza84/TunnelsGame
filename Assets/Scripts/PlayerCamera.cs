@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Cinemachine;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerCamera : MonoBehaviour
 {
@@ -13,14 +14,26 @@ public class PlayerCamera : MonoBehaviour
     [SerializeField] private float LeftAngle;
     [SerializeField] private float RightAngle;
     [SerializeField] private float LeanSpeed;
+    [SerializeField] private float BackLeanSpeed;
     private float Z_TargetAngle;
 
-    private Vector3 TargetEuler;
+    //Camera rotations
+    private Vector3 TargetForwardEuler;
+    private Vector3 TargetBackEuler;
+    private Vector3 BackLeftEuler;
+    private Vector3 BackRightEuler;
+    private float Forward_Z;
 
     private bool Lean;
+    private bool BackLean;
 
     //Controller reference
     private PlayerController _playerController;
+
+    //CameraSpeicifc control
+    private PlayerControls _camControls;
+    private InputAction CameraTurnaround_Left;
+    private InputAction CameraTurnaround_Right;
 
     private void Start()
     {
@@ -31,8 +44,54 @@ public class PlayerCamera : MonoBehaviour
         _playerController.OnLeft += OnLeftArm;
 
         //Set initial lean side
-        LeanCamera(_playerController.CurrentArm);   
+        LeanCamera(_playerController.CurrentArm);
+
+        BackRightEuler = new Vector3(0, 147.73f, 352.0f);
+        BackLeftEuler = new Vector3(4.71f, 215.96f, 353.53f);
+
+        Forward_Z = _cameraTransform.localPosition.z;
     }
+
+    private void OnEnable()
+    {
+        if (_camControls == null)
+        {
+            _camControls = new PlayerControls();
+        }
+
+        CameraTurnaround_Left = _camControls.Crawl.CamBehindLeft;
+        CameraTurnaround_Left.Enable();
+        CameraTurnaround_Left.performed += OnCameraBackLeft;
+        CameraTurnaround_Left.canceled += OnCameraBackLeft_Stopped;
+
+        CameraTurnaround_Right = _camControls.Crawl.CamBehindRight;
+        CameraTurnaround_Right.Enable();
+        CameraTurnaround_Right.performed += OnCameraBackRight;
+        CameraTurnaround_Right.canceled += OnCameraBackRight_Stopped;
+    }
+
+    #region Back Leaning controls
+    private void OnCameraBackLeft(InputAction.CallbackContext obj)
+    {
+        BackLean = true;
+        TargetBackEuler = BackLeftEuler;
+    }
+    private void OnCameraBackLeft_Stopped(InputAction.CallbackContext obj)
+    {
+        BackLean = false;
+    }
+
+    private void OnCameraBackRight(InputAction.CallbackContext obj)
+    {
+        BackLean = true;
+        TargetBackEuler = BackRightEuler;
+    }
+    private void OnCameraBackRight_Stopped(InputAction.CallbackContext obj)
+    {
+        BackLean = false;
+    }
+    #endregion
+
 
     private void OnLeftArm(object sender, System.EventArgs e)
     {
@@ -66,7 +125,7 @@ public class PlayerCamera : MonoBehaviour
                 break;
         }
 
-        TargetEuler.z = Z_TargetAngle;
+        TargetForwardEuler.z = Z_TargetAngle;
 
         Lean = true;
     }
@@ -78,20 +137,56 @@ public class PlayerCamera : MonoBehaviour
 
     private void HandleLeaning()
     {
-        if (Lean)
+        if (BackLean)
         {
-            _cameraTransform.localRotation = Quaternion.Lerp(_cameraTransform.localRotation, Quaternion.Euler(TargetEuler), LeanSpeed);
-
-            if (_cameraTransform.localRotation == Quaternion.Euler(TargetEuler))
+            SetBackLean(TargetBackEuler);
+        }
+        else if (Lean)
+        {
+            //Reset camera to forward Pos if coming from beacklean
+            if (_cameraTransform.localPosition.z != Forward_Z)
             {
-                _cameraTransform.localRotation = Quaternion.RotateTowards(_cameraTransform.localRotation, Quaternion.Euler(TargetEuler), 100);
+                _cameraTransform.localPosition = Vector3.Lerp(_cameraTransform.localPosition, new Vector3(_cameraTransform.localPosition.x,
+                                                                                                  _cameraTransform.localPosition.y,
+                                                                                                  Forward_Z),
+                                                                                                  0.8f);
+            }
+
+            _cameraTransform.localRotation = Quaternion.Lerp(_cameraTransform.localRotation, Quaternion.Euler(TargetForwardEuler), LeanSpeed);
+
+            if (_cameraTransform.localRotation == Quaternion.Euler(TargetForwardEuler))
+            {
+                _cameraTransform.localRotation = Quaternion.RotateTowards(_cameraTransform.localRotation, Quaternion.Euler(TargetForwardEuler), 100);
                 Lean = false;
             }
         }
     }
 
+    private void SetBackLean(Vector3 euler)
+    {
+        _cameraTransform.localRotation = Quaternion.Lerp(_cameraTransform.localRotation, Quaternion.Euler(euler), BackLeanSpeed);
+
+        _cameraTransform.localPosition = Vector3.Lerp(_cameraTransform.localPosition, new Vector3(_cameraTransform.localPosition.x,
+                                                                                                  _cameraTransform.localPosition.y,
+                                                                                                  0),
+                                                                                                  0.8f);
+
+        if (_cameraTransform.localRotation == Quaternion.Euler(euler))
+        {
+            _cameraTransform.localRotation = Quaternion.RotateTowards(_cameraTransform.localRotation, Quaternion.Euler(euler), 100);
+        }
+
+        Lean = true;
+    }
+
     private void OnDisable()
     {
+        CameraTurnaround_Left.Disable();
+        CameraTurnaround_Left.started -= OnCameraBackLeft;
+
+        CameraTurnaround_Right.Disable();
+        CameraTurnaround_Right.started -= OnCameraBackRight;
+
         _playerController.OnRight -= OnRightArm;
         _playerController.OnLeft -= OnLeftArm;
     }

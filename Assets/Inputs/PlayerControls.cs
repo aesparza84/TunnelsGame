@@ -62,6 +62,24 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""CamBehindLeft"",
+                    ""type"": ""Button"",
+                    ""id"": ""c5c9b32f-83c1-47b9-91b5-7ded97a57f32"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""CamBehindRight"",
+                    ""type"": ""Button"",
+                    ""id"": ""160e563b-2d59-4778-a5fd-2e9b8028fe39"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -108,6 +126,28 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""action"": ""CamRight"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""ee2e68f7-73b2-4836-a50b-90173e4b06d5"",
+                    ""path"": ""<Keyboard>/a"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""CamBehindLeft"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""1cc1f28f-986e-418c-989c-7c4de8fabe63"",
+                    ""path"": ""<Keyboard>/d"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""CamBehindRight"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -120,6 +160,8 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         m_Crawl_RightArm = m_Crawl.FindAction("RightArm", throwIfNotFound: true);
         m_Crawl_CamLeft = m_Crawl.FindAction("CamLeft", throwIfNotFound: true);
         m_Crawl_CamRight = m_Crawl.FindAction("CamRight", throwIfNotFound: true);
+        m_Crawl_CamBehindLeft = m_Crawl.FindAction("CamBehindLeft", throwIfNotFound: true);
+        m_Crawl_CamBehindRight = m_Crawl.FindAction("CamBehindRight", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -185,6 +227,8 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     private readonly InputAction m_Crawl_RightArm;
     private readonly InputAction m_Crawl_CamLeft;
     private readonly InputAction m_Crawl_CamRight;
+    private readonly InputAction m_Crawl_CamBehindLeft;
+    private readonly InputAction m_Crawl_CamBehindRight;
     public struct CrawlActions
     {
         private @PlayerControls m_Wrapper;
@@ -193,6 +237,8 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         public InputAction @RightArm => m_Wrapper.m_Crawl_RightArm;
         public InputAction @CamLeft => m_Wrapper.m_Crawl_CamLeft;
         public InputAction @CamRight => m_Wrapper.m_Crawl_CamRight;
+        public InputAction @CamBehindLeft => m_Wrapper.m_Crawl_CamBehindLeft;
+        public InputAction @CamBehindRight => m_Wrapper.m_Crawl_CamBehindRight;
         public InputActionMap Get() { return m_Wrapper.m_Crawl; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -214,6 +260,12 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @CamRight.started += instance.OnCamRight;
             @CamRight.performed += instance.OnCamRight;
             @CamRight.canceled += instance.OnCamRight;
+            @CamBehindLeft.started += instance.OnCamBehindLeft;
+            @CamBehindLeft.performed += instance.OnCamBehindLeft;
+            @CamBehindLeft.canceled += instance.OnCamBehindLeft;
+            @CamBehindRight.started += instance.OnCamBehindRight;
+            @CamBehindRight.performed += instance.OnCamBehindRight;
+            @CamBehindRight.canceled += instance.OnCamBehindRight;
         }
 
         private void UnregisterCallbacks(ICrawlActions instance)
@@ -230,6 +282,12 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @CamRight.started -= instance.OnCamRight;
             @CamRight.performed -= instance.OnCamRight;
             @CamRight.canceled -= instance.OnCamRight;
+            @CamBehindLeft.started -= instance.OnCamBehindLeft;
+            @CamBehindLeft.performed -= instance.OnCamBehindLeft;
+            @CamBehindLeft.canceled -= instance.OnCamBehindLeft;
+            @CamBehindRight.started -= instance.OnCamBehindRight;
+            @CamBehindRight.performed -= instance.OnCamBehindRight;
+            @CamBehindRight.canceled -= instance.OnCamBehindRight;
         }
 
         public void RemoveCallbacks(ICrawlActions instance)
@@ -253,5 +311,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         void OnRightArm(InputAction.CallbackContext context);
         void OnCamLeft(InputAction.CallbackContext context);
         void OnCamRight(InputAction.CallbackContext context);
+        void OnCamBehindLeft(InputAction.CallbackContext context);
+        void OnCamBehindRight(InputAction.CallbackContext context);
     }
 }

@@ -189,6 +189,7 @@ MonoBehaviour:
   LeftAngle: -8
   RightAngle: 8
   LeanSpeed: 0.2
+  BackLeanSpeed: 0.2
 --- !u!1 &174410275
 GameObject:
   m_ObjectHideFlags: 0
