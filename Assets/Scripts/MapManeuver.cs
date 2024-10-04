@@ -144,7 +144,7 @@ public class MapManeuver : MonoBehaviour
         {
             if (Map[X, Y] != null)
             {
-                Debug.Log(Map[X, Y].HasZeroExits());
+                Debug.Log(Map[X, Y].DeadEnd);
             }
         }
 

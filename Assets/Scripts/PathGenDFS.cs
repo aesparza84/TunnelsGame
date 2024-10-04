@@ -40,8 +40,9 @@ public class GridNode
     public Point gridPoint;
 
     public GameObject RoomObj;
-
     public AdjustRoom roomInfo;
+
+    public bool DeadEnd { get; private set; }
     public GridNode()
     {
         gridPoint = new Point(0, 0);
@@ -65,6 +66,10 @@ public class GridNode
         RoomObj = newRoom;
     }
 
+    public void MarkDeadEnd()
+    {
+        DeadEnd = true;
+    }
     public bool HasZeroExits()
     {
         return roomInfo.HasZeroExits();
@@ -88,6 +93,7 @@ public class PathGenDFS : MonoBehaviour
 
     //Map componenets
     private GridNode[,] _gridNodes;
+    public List<GridNode> DeadEnds { get; private set;}
     public GridNode SpawnNode { get; private set; }
 
     public GridNode[,] GridNodes { get { return _gridNodes; } } //Property readonly
@@ -102,6 +108,7 @@ public class PathGenDFS : MonoBehaviour
         _gridNodes = new GridNode[Width, Height];
         _nodes = new List<Node>();
         branchingNodes = new Stack<Node>();
+        DeadEnds = new List<GridNode>();
         
         CurrentI = 0;
 
@@ -245,6 +252,11 @@ public class PathGenDFS : MonoBehaviour
 
             //Debug.Log($"Next ({nextNode.X}, {nextNode.Y} | {nextNode.EntranceSide})");
             CreateRoomsDFS(nextNode.X, nextNode.Y, nextNode.EntranceSide, false);
+        }
+        else
+        {
+            _gridNodes[X, Y].MarkDeadEnd();
+            DeadEnds.Add(_gridNodes[X, Y]);
         }
         
         if (branchingNodes != null && branchingNodes.Count > 0)
