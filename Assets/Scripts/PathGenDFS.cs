@@ -117,7 +117,8 @@ public class PathGenDFS : MonoBehaviour
 
         CreateRoomsDFS(startPosX, startPosY, OpeningSide.NONE, false);
 
-        CreateRandomHideSpots();
+        Invoke("CreateRandomHideSpots", 3.0f);
+        Invoke("CreatelevelExit", 6.0f);
     }
 
 
@@ -258,8 +259,11 @@ public class PathGenDFS : MonoBehaviour
         }
         else
         {
-            _gridNodes[X, Y].MarkDeadEnd();
-            DeadEnds.Add(_gridNodes[X, Y]);
+            if (!returning)
+            {
+                _gridNodes[X, Y].MarkDeadEnd();
+                DeadEnds.Add(_gridNodes[X, Y]);
+            }            
         }
         
         if (branchingNodes != null && branchingNodes.Count > 0)
@@ -286,6 +290,32 @@ public class PathGenDFS : MonoBehaviour
 
             _gridNodes[tempPoint.X, tempPoint.Y].roomInfo.SetHideWall(_gridNodes[tempPoint.X, tempPoint.Y].roomInfo.EntranceSide);
         }
+    }
+
+    private void CreatelevelExit()
+    {
+        //Dont run if no dead ends
+        if (DeadEnds.Count < 1)
+            return;
+
+        int choice = 0;
+        int CheckingCap = AllowedHidingSpots + 10; //Arbitrary loop cap
+
+
+        for (int i = 0; i < CheckingCap; i++)
+        {
+            choice = UnityEngine.Random.Range(0, DeadEnds.Count);
+            Point tempPoint = DeadEnds[choice].gridPoint;
+
+            if (!_gridNodes[tempPoint.X, tempPoint.Y].roomInfo.HideRoom)
+            {
+                _gridNodes[tempPoint.X, tempPoint.Y].roomInfo.SetMazeExit();
+                return;
+            }
+        }
+
+        //Runs again if no exits was found
+        CreatelevelExit();
     }
     private List<Node> CheckNodeneighbors(int X, int Y)
     {

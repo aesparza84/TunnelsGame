@@ -138,18 +138,6 @@ public class MapManeuver : MonoBehaviour
 
     }
 
-    private void Update()
-    {
-        if (Map != null)
-        {
-            if (Map[X, Y] != null)
-            {
-                Debug.Log(Map[X, Y].DeadEnd);
-            }
-        }
-
-    }
-
     //Unsubscribe
     private void OnDisable()
     {

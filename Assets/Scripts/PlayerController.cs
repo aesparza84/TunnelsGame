@@ -5,7 +5,8 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 public enum Side { LEFT, RIGHT, NONE };
-public class PlayerController : MonoBehaviour
+public enum VisibleStatus { VISIBLE, HIDDEN};
+public class PlayerController : MonoBehaviour, IHideable
 {
     //Mapped Inputs
     private PlayerControls _mappedInputs;
@@ -44,6 +45,9 @@ public class PlayerController : MonoBehaviour
     public event EventHandler<Tuple<OpeningSide, Side>> OnMove; //Facing-Dir, Arm side
     [SerializeField] private bool MapMove;
 
+    //Visible Status
+    private VisibleStatus _visibleStatus;
+
     private bool Turning;
     private bool Moving;
     private const float InputCoolDown = 0.3f;
@@ -53,6 +57,7 @@ public class PlayerController : MonoBehaviour
     {
         //Start on Left side
         currentArm = Side.LEFT;
+        _visibleStatus = VisibleStatus.VISIBLE;
 
         TargetRotation = transform.localRotation.eulerAngles;
 
@@ -308,5 +313,15 @@ public class PlayerController : MonoBehaviour
         RightArm.started -= OnRightCrawl;
         TurnLeft.started -= OnTurnLeft;
         TurnRight.started -= OnTurnRight;
+    }
+
+    public void Hide()
+    {
+        _visibleStatus = VisibleStatus.HIDDEN;
+    }
+
+    public void Reveal()
+    {
+        _visibleStatus = VisibleStatus.VISIBLE;
     }
 }
