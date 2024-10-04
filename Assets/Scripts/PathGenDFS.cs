@@ -84,6 +84,7 @@ public class PathGenDFS : MonoBehaviour
     [SerializeField] private int Width = 10;
     [SerializeField] private int Height = 10;
     [SerializeField] private float SpaceBetween = 1; //in meters
+    [SerializeField] private int AllowedHidingSpots; //how many hiding spots we will generate
 
     [Header("Start Position")]
     [SerializeField] private int startPosX;
@@ -115,6 +116,8 @@ public class PathGenDFS : MonoBehaviour
         GenerateGrid();
 
         CreateRoomsDFS(startPosX, startPosY, OpeningSide.NONE, false);
+
+        CreateRandomHideSpots();
     }
 
 
@@ -267,6 +270,23 @@ public class PathGenDFS : MonoBehaviour
         }
     }
 
+    private void CreateRandomHideSpots()
+    {
+        //Dont run if no dead ends
+        if (DeadEnds.Count < 1)
+            return;
+
+        int choice = 0;
+        
+        for (int i = 0; i < AllowedHidingSpots; i++)
+        {
+            choice = UnityEngine.Random.Range(0, DeadEnds.Count);
+
+            Point tempPoint = DeadEnds[choice].gridPoint;
+
+            _gridNodes[tempPoint.X, tempPoint.Y].roomInfo.SetHideWall(_gridNodes[tempPoint.X, tempPoint.Y].roomInfo.EntranceSide);
+        }
+    }
     private List<Node> CheckNodeneighbors(int X, int Y)
     {
         List<Node> neighbors = new List<Node>();

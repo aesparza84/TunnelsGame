@@ -12,10 +12,17 @@ public class AdjustRoom : MonoBehaviour
     [SerializeField] private GameObject S_Wall;
     [SerializeField] private GameObject W_Wall;
 
+    [Header("Hide Walls")]
+    [SerializeField] private GameObject Hide_N_Wall;
+    [SerializeField] private GameObject Hide_E_Wall;
+    [SerializeField] private GameObject Hide_S_Wall;
+    [SerializeField] private GameObject Hide_W_Wall;
+
     [Header("Desired Layout")]
-    [SerializeField] private OpeningSide EntranceSide;
+    [SerializeField] private OpeningSide entranceSide;
     [SerializeField] private OpeningSide[] ExitSides;
     private int ExitCount;
+    public OpeningSide EntranceSide { get { return entranceSide;} }
 
     //Side that this room is branching from
     public OpeningSide BranchingFrom;
@@ -24,16 +31,16 @@ public class AdjustRoom : MonoBehaviour
     public bool BadRoom { get; private set; }
     private void Awake()
     {
-        EntranceSide = OpeningSide.NONE;
+        entranceSide = OpeningSide.NONE;
         ExitSides = new OpeningSide[] { OpeningSide.NONE };
         ExitCount = 0;
     }
     //Public Methods
     public void SetEntrance(OpeningSide side)
     {
-        EntranceSide = side;
+        entranceSide = side;
 
-        switch (EntranceSide)
+        switch (entranceSide)
         {
             case OpeningSide.N:
                 N_Wall.SetActive(false);
@@ -65,16 +72,6 @@ public class AdjustRoom : MonoBehaviour
 
         foreach (OpeningSide side in ExitSides)
         {
-
-            if (!HasHappened)
-            {
-                HasHappened = true;
-            }
-            else
-            {
-
-            }
-
             switch (side)
             {
                 case OpeningSide.N:
@@ -119,6 +116,37 @@ public class AdjustRoom : MonoBehaviour
                 default:
                     break;
             }
+        }
+    }
+
+    public void SetHideWall(OpeningSide hideSide)
+    {
+        switch (hideSide)
+        {
+            case OpeningSide.N:
+                N_Wall.SetActive(false);
+                Hide_N_Wall.SetActive(true);
+
+                break;
+            case OpeningSide.E:
+                E_Wall.SetActive(false);
+                Hide_E_Wall.SetActive(true);
+
+                break;
+            case OpeningSide.S:
+                S_Wall.SetActive(false);
+                Hide_S_Wall.SetActive(true);
+
+                break;
+            case OpeningSide.W:
+                W_Wall.SetActive(false);
+                Hide_W_Wall.SetActive(true);
+
+                break;
+            case OpeningSide.NONE:
+                break;
+            default:
+                break;
         }
     }
     public bool HasZeroExits()
