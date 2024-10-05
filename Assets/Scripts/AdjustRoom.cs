@@ -24,6 +24,7 @@ public class AdjustRoom : MonoBehaviour
     [Header("Desired Layout")]
     [SerializeField] private OpeningSide entranceSide;
     [SerializeField] private OpeningSide[] ExitSides;
+    public List<OpeningSide> ExitList { get; private set; }
     private int ExitCount;
     public OpeningSide EntranceSide { get { return entranceSide;} }
 
@@ -40,6 +41,7 @@ public class AdjustRoom : MonoBehaviour
     {
         entranceSide = OpeningSide.NONE;
         ExitSides = new OpeningSide[] { OpeningSide.NONE };
+        ExitList = new List<OpeningSide>();
         ExitCount = 0;
 
         if (RoomTrigger != null)
@@ -90,6 +92,8 @@ public class AdjustRoom : MonoBehaviour
                     {
                         N_Wall.SetActive(false);
                         ExitCount++;
+
+                        ExitList.Add(OpeningSide.N);
                     }
 
                     break;
@@ -98,6 +102,8 @@ public class AdjustRoom : MonoBehaviour
                     {
                         E_Wall.SetActive(false);
                         ExitCount++;
+
+                        ExitList.Add(OpeningSide.E);
                     }
 
 
@@ -107,6 +113,8 @@ public class AdjustRoom : MonoBehaviour
                     {
                         S_Wall.SetActive(false);
                         ExitCount++;
+                     
+                        ExitList.Add(OpeningSide.S);
                     }
 
 
@@ -117,6 +125,7 @@ public class AdjustRoom : MonoBehaviour
                     {
                         W_Wall.SetActive(false);
                         ExitCount++;
+                        ExitList.Add(OpeningSide.W);
                     }
 
                     break;
@@ -177,7 +186,15 @@ public class AdjustRoom : MonoBehaviour
     {
         return ExitCount < 1;
     }
+    public bool ContainsOpenings(OpeningSide entranceSide, OpeningSide exitSide)
+    {
+        if (EntranceSide == entranceSide || ExitList.Contains(exitSide))
+        {
+            return true;
+        }
 
+        return false;
+    }
     private void OnTriggerEnter(Collider other)
     {
         //Hide 'hideable' if this is marked 'Hide Room'
