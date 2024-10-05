@@ -67,23 +67,6 @@ public class EnemyBehavior : MonoBehaviour
         ClosedNodes = new List<GridNode>();
 
         currentNode = new PathNode();//null node
-
-        ResetDataStructures();
-
-        //Get random Valid-Point
-
-        for (int i = 0; i < 1000; i++)
-        {
-            X = UnityEngine.Random.Range(0, Map.GetLength(0));
-            Y = UnityEngine.Random.Range(0, Map.GetLength(1));
-
-            if (Map[X, Y] != null)
-            {
-                break;
-            }
-        }
-
-        Invoke("DoPathFind", 5.0f);
     }
     private void ResetDataStructures()
     {
@@ -91,10 +74,19 @@ public class EnemyBehavior : MonoBehaviour
         OpenNodes.Clear();
         ClosedNodes.Clear();
         OpenPathNodes.Clear();
+        currentNode = new PathNode();//null node
     }
 
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.S))
+        {
+            DoPathFind();
+        }
+    }
     private void DoPathFind()
     {
+        ResetDataStructures();
         StartCoroutine(FindBestPath(new Point(StartX, StartY), new Point(X,Y)));
     }
 
@@ -158,24 +150,20 @@ public class EnemyBehavior : MonoBehaviour
                     {
                         continue;
                     }
+                    //Else, Add neighbor to open list
+                    else if (!ListContainsPoint(lowestnode.gridPoint, ref OpenNodes, out int uu))
+                    {
+                        lowestnode.SetParentNode(currentNode);
+                        OpenNodes.Add(Map[lowestnode.gridPoint.X, lowestnode.gridPoint.Y]);
+                        OpenPathNodes.Add(lowestnode);
+                    }
 
                     //Else examine node
-                    if (neighbors[i].F <= lowestnode.F)
-                    {
-                        lowestnode = neighbors[i];
-                    }
-                }
-
-                //Add lower F-niehgbor to closed list
-
-                if (!ListContainsPoint(lowestnode.gridPoint, ref OpenNodes, out int opindex))
-                {
-                    lowestnode.SetParentNode(currentNode);
-                    OpenNodes.Add(Map[lowestnode.gridPoint.X, lowestnode.gridPoint.Y]);
-                    OpenPathNodes.Add(lowestnode);
-                }
-
-                
+                    //if (neighbors[i].F <= lowestnode.F)
+                    //{
+                    //    lowestnode = neighbors[i];
+                    //}
+                }                
             }
 
             yield return null;

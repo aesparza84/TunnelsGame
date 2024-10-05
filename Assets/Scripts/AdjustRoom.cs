@@ -56,18 +56,22 @@ public class AdjustRoom : MonoBehaviour
         {
             case OpeningSide.N:
                 N_Wall.SetActive(false);
+                ExitList.Add(OpeningSide.N);
 
                 break;
             case OpeningSide.E:
                 E_Wall.SetActive(false);
+                ExitList.Add(OpeningSide.E);
 
                 break;
             case OpeningSide.S:
                 S_Wall.SetActive(false);
+                ExitList.Add(OpeningSide.S);
 
                 break;
             case OpeningSide.W:
                 W_Wall.SetActive(false);
+                ExitList.Add(OpeningSide.W);
 
                 break;
             case OpeningSide.NONE:
