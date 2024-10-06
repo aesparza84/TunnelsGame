@@ -129,7 +129,8 @@ public class MapManeuver : MonoBehaviour
 
                 if (_player.Crawl(arm))
                 {
-                    Debug.Log($"From ({_playerPos.X}, {_playerPos.Y})\n To ({potentialPoint.X}, {potentialPoint.Y})");
+                    // Debug.Log($"From ({_playerPos.X}, {_playerPos.Y})\n To ({potentialPoint.X}, {potentialPoint.Y})");
+                    
                     //Update player node position when move
                     _playerPos.SetPoint(potentialPoint.X, potentialPoint.Y);
                 }

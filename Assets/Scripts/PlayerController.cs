@@ -280,11 +280,11 @@ public class PlayerController : MonoBehaviour, IHideable
             {
                 transform.position = Vector3.MoveTowards(transform.position, TargetPos, MoveSpeed);
             }
-
-            if (transform.position == TargetPos)
+            else
             {
                 Moving = false;
-            }            
+
+            }          
         }
     }
 

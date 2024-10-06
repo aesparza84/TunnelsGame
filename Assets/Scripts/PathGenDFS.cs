@@ -36,6 +36,9 @@ public class GridNode
     public bool Visited;
 
     public bool SpawnNode;
+    public bool IsExit { get { return roomInfo.MazeExit; } }
+    public bool IsHideSpot { get { return roomInfo.HideRoom; } }
+
 
     public Point gridPoint;
 
@@ -117,8 +120,8 @@ public class PathGenDFS : MonoBehaviour
 
         CreateRoomsDFS(startPosX, startPosY, OpeningSide.NONE, false);
 
-        Invoke("CreateRandomHideSpots", 3.0f);
-        Invoke("CreatelevelExit", 6.0f);
+        CreatelevelExit();
+        CreateRandomHideSpots();
     }
 
 
@@ -282,13 +285,25 @@ public class PathGenDFS : MonoBehaviour
 
         int choice = 0;
         
+        if (AllowedHidingSpots > DeadEnds.Count)
+        {
+            AllowedHidingSpots = DeadEnds.Count;
+        }
+
         for (int i = 0; i < AllowedHidingSpots; i++)
         {
             choice = UnityEngine.Random.Range(0, DeadEnds.Count);
 
             Point tempPoint = DeadEnds[choice].gridPoint;
 
-            _gridNodes[tempPoint.X, tempPoint.Y].roomInfo.SetHideWall(_gridNodes[tempPoint.X, tempPoint.Y].roomInfo.EntranceSide);
+            if (!_gridNodes[tempPoint.X, tempPoint.Y].IsExit && !_gridNodes[tempPoint.X, tempPoint.Y].SpawnNode)
+            {
+                _gridNodes[tempPoint.X, tempPoint.Y].roomInfo.SetHideWall(_gridNodes[tempPoint.X, tempPoint.Y].roomInfo.EntranceSide);
+            }
+            else
+            {
+                i = 0;
+            }
         }
     }
 
@@ -307,15 +322,12 @@ public class PathGenDFS : MonoBehaviour
             choice = UnityEngine.Random.Range(0, DeadEnds.Count);
             Point tempPoint = DeadEnds[choice].gridPoint;
 
-            if (!_gridNodes[tempPoint.X, tempPoint.Y].roomInfo.HideRoom)
+            if (!_gridNodes[tempPoint.X, tempPoint.Y].IsHideSpot && !_gridNodes[tempPoint.X, tempPoint.Y].SpawnNode)
             {
                 _gridNodes[tempPoint.X, tempPoint.Y].roomInfo.SetMazeExit();
                 return;
             }
         }
-
-        //Runs again if no exits was found
-        CreatelevelExit();
     }
     private List<Node> CheckNodeneighbors(int X, int Y)
     {
