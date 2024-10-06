@@ -510,6 +510,7 @@ MonoBehaviour:
   startPos: {x: 0, y: 0}
   endPos: {x: 0, y: 0}
   MoveSpeed: 0.1
+  MoveCoolDown: 0.1
 --- !u!4 &500653227
 Transform:
   m_ObjectHideFlags: 0

@@ -62,7 +62,7 @@ public class PathFinder : MonoBehaviour, IPathFinder
 
     //Path moving
     [SerializeField] private float MoveSpeed;
-    private float MoveCoolDown;
+    [SerializeField] private float MoveCoolDown;
     private float currentCooldown;
     private bool Traverse;
     private bool Moving;
@@ -356,7 +356,14 @@ public class PathFinder : MonoBehaviour, IPathFinder
                 }
                 else
                 {
-                    Moving = false;
+                    if (currentCooldown < MoveCoolDown)
+                    {
+                        currentCooldown += Time.deltaTime;
+                    }
+                    else
+                    {
+                        Moving = false;
+                    }
                 }
             }
             else
@@ -367,6 +374,7 @@ public class PathFinder : MonoBehaviour, IPathFinder
                     Point n = PathStack.Pop().gridPoint;
                     CurrentPoint = n;
                     TargetPos = Map[n.X, n.Y]._transform.position;
+                    currentCooldown = 0.0f;
                     Moving = true;
                 }
             }
@@ -404,6 +412,7 @@ public class PathFinder : MonoBehaviour, IPathFinder
 
     public void StopTraverse()
     {
-        throw new System.NotImplementedException();
+        Traverse = false;
+        transform.position = Map[CurrentPoint.X, CurrentPoint.Y]._transform.position;
     }
 }

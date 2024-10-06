@@ -26,5 +26,10 @@ public class EnemyBehavior : MonoBehaviour
         {
             _pathFinder.TraversePath();
         }
+
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            _pathFinder.StopTraverse();
+        }
     }
 }
