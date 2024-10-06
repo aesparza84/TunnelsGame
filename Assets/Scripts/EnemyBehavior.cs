@@ -51,11 +51,15 @@ public class EnemyBehavior : MonoBehaviour
     private List<GridNode> OpenNodes;
     private List<PathNode> OpenPathNodes;
     private List<GridNode> ClosedNodes;
+    private Stack<PathNode> PathStack;
+    private PathNode TargetNode;
 
-    private int X;
-    private int Y;
+    [SerializeField] private int End_X;
+    [SerializeField] private int End_Y;
     [SerializeField] private int StartX;
     [SerializeField] private int StartY;
+    [SerializeField] private float MoveCoolDown;
+    private float currentCooldown;
 
     private void Start()
     {
@@ -65,8 +69,12 @@ public class EnemyBehavior : MonoBehaviour
         OpenNodes = new List<GridNode>();
         OpenPathNodes = new List<PathNode>();
         ClosedNodes = new List<GridNode>();
+        PathStack = new Stack<PathNode>();
 
         currentNode = new PathNode();//null node
+        TargetNode = new PathNode();//null node
+
+        currentCooldown = MoveCoolDown;
     }
     private void ResetDataStructures()
     {
@@ -74,6 +82,7 @@ public class EnemyBehavior : MonoBehaviour
         OpenNodes.Clear();
         ClosedNodes.Clear();
         OpenPathNodes.Clear();
+        PathStack.Clear();
         currentNode = new PathNode();//null node
     }
 
@@ -87,9 +96,10 @@ public class EnemyBehavior : MonoBehaviour
     private void DoPathFind()
     {
         ResetDataStructures();
-        StartCoroutine(FindBestPath(new Point(StartX, StartY), new Point(X,Y)));
+        StartCoroutine(FindBestPath(new Point(StartX, StartY), new Point(End_X,End_Y)));
     }
 
+    //Used Swfit's article as guide https://medium.com/@nicholas.w.swift/easy-a-star-pathfinding-7e6689c7f7b2
     private IEnumerator FindBestPath(Point start, Point end)
     {
         bool Found = false;
@@ -140,8 +150,6 @@ public class EnemyBehavior : MonoBehaviour
             //IF we have neighbors, find next lowest F
             if (neighbors.Count > 0)
             {
-                //Set lowest as 1st to compare
-                PathNode lowestnode = neighbors[0]; 
 
                 for (int i = 0; i < neighbors.Count; i++)
                 {
@@ -151,18 +159,12 @@ public class EnemyBehavior : MonoBehaviour
                         continue;
                     }
                     //Else, Add neighbor to open list
-                    else if (!ListContainsPoint(lowestnode.gridPoint, ref OpenNodes, out int uu))
+                    else if (!ListContainsPoint(neighbors[i].gridPoint, ref OpenNodes, out int uu))
                     {
-                        lowestnode.SetParentNode(currentNode);
-                        OpenNodes.Add(Map[lowestnode.gridPoint.X, lowestnode.gridPoint.Y]);
-                        OpenPathNodes.Add(lowestnode);
+                        neighbors[i].SetParentNode(currentNode);
+                        OpenNodes.Add(Map[neighbors[i].gridPoint.X, neighbors[i].gridPoint.Y]);
+                        OpenPathNodes.Add(neighbors[i]);
                     }
-
-                    //Else examine node
-                    //if (neighbors[i].F <= lowestnode.F)
-                    //{
-                    //    lowestnode = neighbors[i];
-                    //}
                 }                
             }
 
@@ -182,10 +184,12 @@ public class EnemyBehavior : MonoBehaviour
         if (node.NodeFrom != null)
         {
             Debug.Log($"From ({node.gridPoint.X},{node.gridPoint.Y}) \n To ({node.NodeFrom.gridPoint.X},{node.NodeFrom.gridPoint.Y})");
-            
+            PathStack.Push(node.NodeFrom);
             ShowBranchNode(node.NodeFrom);
         }
     }
+
+
     private PathNode FindLowestF(ref List<PathNode> list)
     {
         /* Old using Gridnode list
