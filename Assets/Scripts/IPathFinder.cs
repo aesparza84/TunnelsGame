@@ -7,4 +7,6 @@ public interface IPathFinder
     public void SetNewDestination(Point p);
     public void TraversePath();
     public void StopTraverse();
+
+    public Point GetRandomPoint();
 }

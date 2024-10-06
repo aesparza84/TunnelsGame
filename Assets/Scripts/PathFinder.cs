@@ -186,7 +186,7 @@ public class PathFinder : MonoBehaviour, IPathFinder
     {
         if (node.NodeFrom != null)
         {
-            Debug.Log($"From ({node.gridPoint.X},{node.gridPoint.Y}) \n To ({node.NodeFrom.gridPoint.X},{node.NodeFrom.gridPoint.Y})");
+            //Debug.Log($"From ({node.gridPoint.X},{node.gridPoint.Y}) \n To ({node.NodeFrom.gridPoint.X},{node.NodeFrom.gridPoint.Y})");
             PathStack.Push(node.NodeFrom);
             ShowBranchNode(node.NodeFrom);
         }
@@ -400,6 +400,7 @@ public class PathFinder : MonoBehaviour, IPathFinder
 
     }
 
+
     public void TraversePath()
     {
         //Return if no path queued
@@ -409,10 +410,37 @@ public class PathFinder : MonoBehaviour, IPathFinder
         Traverse = true;
         PathCount = PathStack.Count;
     }
-
     public void StopTraverse()
     {
         Traverse = false;
         transform.position = Map[CurrentPoint.X, CurrentPoint.Y]._transform.position;
+    }
+    public Point GetRandomPoint()
+    {
+        Point r_point = new Point(0, 0);
+
+        int cap = Map.GetLength(0) * Map.GetLength(1);
+
+        int x = 0;
+        int y = 0;
+
+        for (int i = 0; i < cap; i++)
+        {
+            x = UnityEngine.Random.Range(0, Map.GetLength(0));
+            y = UnityEngine.Random.Range(0, Map.GetLength(1));
+
+            r_point.SetPoint(x, y);
+
+            if (RoomExists(r_point))
+            {
+                if (!Map[r_point.X, r_point.Y].IsHideSpot && !Map[r_point.X, r_point.Y].IsExit)
+                {
+                    //Found valid point, leave
+                    break;
+                }
+            }
+        }
+
+        return r_point;
     }
 }

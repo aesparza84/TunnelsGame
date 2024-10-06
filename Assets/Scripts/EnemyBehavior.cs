@@ -31,5 +31,11 @@ public class EnemyBehavior : MonoBehaviour
         {
             _pathFinder.StopTraverse();
         }
+
+        if (Input.GetKeyDown(KeyCode.A))
+        {
+            Point n = _pathFinder.GetRandomPoint();
+            _pathFinder.SetNewDestination(n);
+        }
     }
 }
