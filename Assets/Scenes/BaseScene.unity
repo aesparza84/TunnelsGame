@@ -1322,8 +1322,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   AdjustablePrefab: {fileID: 4902526279256156997, guid: 17af493fe9af792419774136b7535123,
     type: 3}
+  MaxWidth: 20
+  MaxHeight: 20
+  MinWidth: 6
+  MinHeight: 6
   Width: 8
-  Height: 8
+  Height: 5
   SpaceBetween: 1
   AllowedHidingSpots: 1
   startPosX: 2

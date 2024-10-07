@@ -17,25 +17,25 @@ public class EnemyBehavior : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.S))
-        {
-            _pathFinder.SetNewDestination(new Point((int)newPos.x, (int)newPos.y));
-        }
+        //if (Input.GetKeyDown(KeyCode.S))
+        //{
+        //    _pathFinder.SetNewDestination(new Point((int)newPos.x, (int)newPos.y));
+        //}
 
-        if (Input.GetKeyDown(KeyCode.W))
-        {
-            _pathFinder.TraversePath();
-        }
+        //if (Input.GetKeyDown(KeyCode.W))
+        //{
+        //    _pathFinder.TraversePath();
+        //}
 
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            _pathFinder.StopTraverse();
-        }
+        //if (Input.GetKeyDown(KeyCode.R))
+        //{
+        //    _pathFinder.StopTraverse();
+        //}
 
-        if (Input.GetKeyDown(KeyCode.A))
-        {
-            Point n = _pathFinder.GetRandomPoint();
-            _pathFinder.SetNewDestination(n);
-        }
+        //if (Input.GetKeyDown(KeyCode.A))
+        //{
+        //    Point n = _pathFinder.GetRandomPoint();
+        //    _pathFinder.SetNewDestination(n);
+        //}
     }
 }

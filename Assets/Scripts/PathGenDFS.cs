@@ -84,10 +84,13 @@ public class PathGenDFS : MonoBehaviour
     [SerializeField] private GameObject AdjustablePrefab;
 
     [Header("Map Info")]
+    [SerializeField] private int MaxDimension = 20;
+    [SerializeField] private int MinDimension = 20;
     [SerializeField] private int Width = 10;
     [SerializeField] private int Height = 10;
     [SerializeField] private float SpaceBetween = 1; //in meters
     [SerializeField] private int AllowedHidingSpots; //how many hiding spots we will generate
+    [SerializeField] private bool SquareMap;
 
     [Header("Start Position")]
     [SerializeField] private int startPosX;
@@ -107,6 +110,8 @@ public class PathGenDFS : MonoBehaviour
 
     [Header("Debug")]
     [SerializeField] private GameObject sphere;
+
+    public event EventHandler OnNewMapGenerated;
     void Awake()
     {
         _gridNodes = new GridNode[Width, Height];
@@ -117,36 +122,86 @@ public class PathGenDFS : MonoBehaviour
         CurrentI = 0;
 
         GenerateGrid();
-
         CreateRoomsDFS(startPosX, startPosY, OpeningSide.NONE, false);
-
+        CreateSpawnNode();
         CreatelevelExit();
         CreateRandomHideSpots();
+        OnNewMapGenerated?.Invoke(this, EventArgs.Empty);
     }
 
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            ResetMap();
+        }
 
+        if (Input.GetKeyDown(KeyCode.S))
+        {
+            GenerateGrid();
+            CreateRoomsDFS(startPosX, startPosY, OpeningSide.NONE, false);
+            CreateSpawnNode();
+            CreatelevelExit();
+            CreateRandomHideSpots();
+            OnNewMapGenerated?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    private void ResetMap()
+    {
+        //Clear Rooms
+        //Clear Nodes
+        for (int i = 0; i < Height; i++)
+        {
+            for (int j = 0; j < Width; j++)
+            {
+                Destroy(_gridNodes[j, i].RoomObj);
+                Destroy(_gridNodes[j, i]._transform.gameObject);
+            }
+        }
+
+        //Reset map iterator
+        CurrentI = 0;
+
+        //Reset Data structures, Except gridnodes (in generateGrid)
+        _nodes.Clear();
+        branchingNodes.Clear();
+        DeadEnds.Clear();
+    }
     private void GenerateGrid()
     {
+        if (!SquareMap)
+        {
+            Width = UnityEngine.Random.Range(MinDimension, MaxDimension+1);
+            Height = UnityEngine.Random.Range(MinDimension, MaxDimension+1);
+        }
+        else
+        {
+            Width = UnityEngine.Random.Range(MinDimension, MaxDimension + 1);
+            Height = Width;
+        }
+        _gridNodes = new GridNode[Width, Height];
+
         for (int i = 0; i < Height; i++)
         {
             for (int j = 0; j < Width; j++)
             {
                 //Initialize Gridnode to add
                 GridNode node = new GridNode();
-                GameObject p = new GameObject(); //Empty GameObject transform
 
-                GameObject inst = Instantiate(p, transform.position, transform.rotation);
-                inst.transform.position += new Vector3(j * SpaceBetween, 0, i * SpaceBetween);
+                //Empty GameObject transform
+                GameObject p = new GameObject(); 
 
-                node._transform = inst.transform;
+                //Set node transform pos.
+                p.transform.SetParent(transform);
+                p.name = $"Transform {j}";
+                p.transform.position += new Vector3(j * SpaceBetween, 0, i * SpaceBetween);
+                node._transform = p.transform;
                 _gridNodes[j, i] = node;
-
-                inst.transform.SetParent(transform);
-                //_transforms[j, i] = inst.transform;
 
 
                 //Debug for sphere
-                GameObject o = Instantiate(sphere, inst.transform.position, transform.rotation);
+                //GameObject o = Instantiate(sphere, inst.transform.position, transform.rotation);
             }
         }
     }
@@ -204,15 +259,8 @@ public class PathGenDFS : MonoBehaviour
             _gridNodes[X, Y].VisitNode(X, Y);
             _gridNodes[X, Y].SetRoomObj(n);
 
-            //If this is the first node created
-            if (CurrentI == 1)
-            {
-                SpawnNode = _gridNodes[X, Y];
-            }
+            
         }
-        
-
-        
 
         //Check for valid neighboring nodes
         List<Node> n_nodes = CheckNodeneighbors(X, Y);
@@ -277,6 +325,11 @@ public class PathGenDFS : MonoBehaviour
         }
     }
 
+    private void CreateSpawnNode()
+    {
+        SpawnNode = DeadEnds[0];
+        _gridNodes[SpawnNode.gridPoint.X, SpawnNode.gridPoint.Y].roomInfo.SetHideWall(_gridNodes[SpawnNode.gridPoint.X, SpawnNode.gridPoint.Y].roomInfo.EntranceSide);
+    }
     private void CreateRandomHideSpots()
     {
         //Dont run if no dead ends

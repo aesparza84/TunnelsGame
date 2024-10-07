@@ -59,8 +59,15 @@ public class MapManeuver : MonoBehaviour
             MovePlayerToNode(_pathGenerator.SpawnNode);
         }
 
+        _pathGenerator.OnNewMapGenerated += UpdateMap;
+
     }
 
+    private void UpdateMap(object sender, System.EventArgs e)
+    {
+        Map = _pathGenerator.GridNodes;
+        MovePlayerToNode(_pathGenerator.SpawnNode);
+    }
 
     private void OnEnable()
     {
@@ -143,5 +150,6 @@ public class MapManeuver : MonoBehaviour
     private void OnDisable()
     {
         _player.OnMove -= OnmoveRequest;
+        _pathGenerator.OnNewMapGenerated -= UpdateMap;
     }
 }

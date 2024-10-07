@@ -70,6 +70,8 @@ public class PathFinder : MonoBehaviour, IPathFinder
 
     private void Start()
     {
+        _pathGenerator.OnNewMapGenerated += UpdateMap;
+
         //Set the map
         Map = _pathGenerator.GridNodes;
 
@@ -85,6 +87,17 @@ public class PathFinder : MonoBehaviour, IPathFinder
 
         SpawnAtRandomEnd();
     }
+
+    private void OnDisable()
+    {
+        _pathGenerator.OnNewMapGenerated -= UpdateMap;
+    }
+    private void UpdateMap(object sender, System.EventArgs e)
+    {
+        Map = _pathGenerator.GridNodes;
+        SpawnAtRandomEnd();
+    }
+
     private void ResetDataStructures()
     {
         //Clear all Data Structures
