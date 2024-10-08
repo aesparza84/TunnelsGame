@@ -60,7 +60,7 @@ public class PlayerController : MonoBehaviour, IHideable
 
     private bool Turning;
     private bool Moving;
-    private const float InputCoolDown = 0.3f;
+    private const float InputCoolDown = 0.25f;
     private float currentCoolDown;
 
     private void Start()

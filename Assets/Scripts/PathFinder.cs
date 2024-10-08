@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.ConstrainedExecution;
@@ -73,6 +74,8 @@ public class PathFinder : MonoBehaviour, IPathFinder
     private bool Moving;
     private int PathCount;
     private bool Found;
+
+    public event EventHandler OnReachedPoint;
 
     private void Start()
     {
@@ -159,13 +162,17 @@ public class PathFinder : MonoBehaviour, IPathFinder
                 Debug.Log("Found Path!");
                 Found = true;
 
-                PathStack.Push(currentNode);
 
                 //Remove is hideSpot
                 if (Map[finalNode.gridPoint.X, finalNode.gridPoint.Y].IsHideSpot ||
                     Map[finalNode.gridPoint.X, finalNode.gridPoint.Y].IsExit)
                 {
-                    PathStack.Pop();
+                    finalNode = currentNode.NodeFrom;
+                    PathStack.Push(finalNode);
+                }
+                else
+                {
+                    PathStack.Push(currentNode);
                 }
 
                 yield return null;
@@ -404,7 +411,10 @@ public class PathFinder : MonoBehaviour, IPathFinder
 
                     //If we reached finalNode, stop
                     if (transform.position == Map[finalNode.gridPoint.X, finalNode.gridPoint.Y]._transform.position)
+                    {
                         Traverse = false;
+                        OnReachedPoint?.Invoke(this, EventArgs.Empty);
+                    }
                 }
             }
             else
@@ -433,7 +443,6 @@ public class PathFinder : MonoBehaviour, IPathFinder
                     {
                         NextDir = new Vector3(0, -180, 0);
                     }
-
 
                     Moving = true;
                 }
@@ -476,7 +485,7 @@ public class PathFinder : MonoBehaviour, IPathFinder
     public void StopTraverse()
     {
         Traverse = false;
-        transform.position = Map[CurrentPoint.X, CurrentPoint.Y]._transform.position;
+        //transform.position = Map[CurrentPoint.X, CurrentPoint.Y]._transform.position;
     }
     public Point GetRandomPoint()
     {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public enum EnemyState { LURKING, HUNTING, ATTACKING}
+public enum EnemyState { LURKING, HUNTING, ATTACKING, LINGERING}
 
 [RequireComponent(typeof(PathFinder))]
 public class EnemyBehavior : MonoBehaviour, IEars
@@ -13,9 +13,14 @@ public class EnemyBehavior : MonoBehaviour, IEars
 
     [SerializeField] private Vector2 newPos;
 
+    [Header("Move State Speeds")]
     [SerializeField] private float LurkSpeed;
     [SerializeField] private float HuntSpeed;
     [SerializeField] private float ChaseSpeed;
+
+    [Header("Linger Time")]
+    [SerializeField] private float LingerTime;
+    private float currentLingerTime;
 
     //Current Enemy state
     //LURKING - Visiting random nodes
@@ -25,9 +30,15 @@ public class EnemyBehavior : MonoBehaviour, IEars
 
     private void Start()
     {
-        _pathFinder = GetComponent<PathFinder>();   
-        
+        _pathFinder = GetComponent<PathFinder>();
+        _pathFinder.OnReachedPoint += ReachedDestination;
+
         EnterState(EnemyState.LURKING);
+    }
+
+    private void ReachedDestination(object sender, System.EventArgs e)
+    {
+        EnterState(EnemyState.LINGERING);
     }
 
     private void Update()
@@ -66,6 +77,18 @@ public class EnemyBehavior : MonoBehaviour, IEars
                 break;
             case EnemyState.ATTACKING:
                 break;
+
+            case EnemyState.LINGERING:
+                if (currentLingerTime < LingerTime)
+                {
+                    currentLingerTime += Time.deltaTime;
+                }
+                else
+                {
+                    EnterState(EnemyState.LURKING);
+                }
+
+                break;
             default:
                 break;
         }
@@ -102,9 +125,18 @@ public class EnemyBehavior : MonoBehaviour, IEars
                 _pathFinder.SetSpeed(ChaseSpeed);
                 
                 break;
+
+            case EnemyState.LINGERING:
+                currentLingerTime = 0.0f;
+
+                break;
             default:
                 break;
         }
     }
-   
+
+    private void OnDisable()
+    {
+        _pathFinder.OnReachedPoint -= ReachedDestination;
+    }
 }
