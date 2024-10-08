@@ -201,7 +201,7 @@ public class PathGenDFS : MonoBehaviour
 
 
                 //Debug for sphere
-                //GameObject o = Instantiate(sphere, inst.transform.position, transform.rotation);
+                GameObject o = Instantiate(sphere, p.transform.position, transform.rotation);
             }
         }
     }

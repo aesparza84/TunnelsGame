@@ -64,9 +64,15 @@ public class PathFinder : MonoBehaviour, IPathFinder
     [SerializeField] private float MoveSpeed;
     [SerializeField] private float MoveCoolDown;
     private float currentCooldown;
-    private bool Traverse;
+    private Vector3 NextDir;
+
+
+    //Path state properties
+    public bool Traverse { get; private set; }
+    public bool Calculating { get; private set; }
     private bool Moving;
     private int PathCount;
+    private bool Found;
 
     private void Start()
     {
@@ -111,7 +117,12 @@ public class PathFinder : MonoBehaviour, IPathFinder
     //Used Swfit's article as guide https://medium.com/@nicholas.w.swift/easy-a-star-pathfinding-7e6689c7f7b2
     private IEnumerator FindBestPath(Point start, Point end)
     {
-        bool Found = false;
+        //Set Calculating state
+        Calculating = true;
+
+        Found = false;
+        endPos.x = end.X;
+        endPos.y = end.Y;
 
         //Return if final point isn't valid
         if (!RoomExists(end))
@@ -123,6 +134,7 @@ public class PathFinder : MonoBehaviour, IPathFinder
         startNode.HardSetF();
 
         finalNode = new PathNode(end, start, end);
+        
 
         currentNode = startNode;
 
@@ -148,6 +160,14 @@ public class PathFinder : MonoBehaviour, IPathFinder
                 Found = true;
 
                 PathStack.Push(currentNode);
+
+                //Remove is hideSpot
+                if (Map[finalNode.gridPoint.X, finalNode.gridPoint.Y].IsHideSpot ||
+                    Map[finalNode.gridPoint.X, finalNode.gridPoint.Y].IsExit)
+                {
+                    PathStack.Pop();
+                }
+
                 yield return null;
             }
 
@@ -191,7 +211,10 @@ public class PathFinder : MonoBehaviour, IPathFinder
 
         ShowBranchNode(currentNode);
 
+        TraversePath();
 
+        //Set Calculating state
+        Calculating = false;
         yield return null;
     }
 
@@ -366,6 +389,7 @@ public class PathFinder : MonoBehaviour, IPathFinder
                 if (transform.position != TargetPos)
                 {
                     transform.position = Vector3.MoveTowards(transform.position, TargetPos, MoveSpeed);
+                    transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.Euler(NextDir), 20);
                 }
                 else
                 {
@@ -377,6 +401,10 @@ public class PathFinder : MonoBehaviour, IPathFinder
                     {
                         Moving = false;
                     }
+
+                    //If we reached finalNode, stop
+                    if (transform.position == Map[finalNode.gridPoint.X, finalNode.gridPoint.Y]._transform.position)
+                        Traverse = false;
                 }
             }
             else
@@ -388,14 +416,31 @@ public class PathFinder : MonoBehaviour, IPathFinder
                     CurrentPoint = n;
                     TargetPos = Map[n.X, n.Y]._transform.position;
                     currentCooldown = 0.0f;
+                    Vector3 dirTo = (TargetPos - transform.position).normalized;
+                    if (dirTo == Vector3.right)
+                    {
+                        NextDir = new Vector3 (0, 90, 0);
+                    }
+                    else if (dirTo == -Vector3.right)
+                    {
+                        NextDir = new Vector3(0, -90, 0);
+                    }
+                    else if (dirTo == Vector3.forward)
+                    {
+                        NextDir = new Vector3(0, 0, 0);
+                    }
+                    else if (dirTo == -Vector3.forward)
+                    {
+                        NextDir = new Vector3(0, -180, 0);
+                    }
+
+
                     Moving = true;
                 }
             }
 
 
-            //If we reached finalNode, stop
-            if (transform.position == Map[finalNode.gridPoint.X, finalNode.gridPoint.Y]._transform.position)
-                Traverse = false;
+            
 
         }
     }
@@ -403,6 +448,7 @@ public class PathFinder : MonoBehaviour, IPathFinder
     //Public interface methods
     public void SetNewDestination(Point endPoint)
     {
+        StopTraverse();
         ResetDataStructures();
 
         //Check if endPoint exists
@@ -413,6 +459,10 @@ public class PathFinder : MonoBehaviour, IPathFinder
 
     }
 
+    public void SetSpeed(float speed)
+    {
+        MoveSpeed = speed;
+    }
 
     public void TraversePath()
     {
@@ -452,6 +502,8 @@ public class PathFinder : MonoBehaviour, IPathFinder
                     break;
                 }
             }
+
+            r_point.SetPoint(0, 0);
         }
 
         return r_point;

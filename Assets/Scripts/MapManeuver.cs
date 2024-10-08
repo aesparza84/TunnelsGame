@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -34,7 +35,7 @@ public class MapManeuver : MonoBehaviour
 
     [Header("Player reference")]
     [SerializeField] private PlayerController _player;
-    private Point _playerPos;
+    public Point _playerPos { get; private set; }
 
     [Header("Movement Mask")]
     [SerializeField] private LayerMask HitLayermask;
@@ -134,7 +135,7 @@ public class MapManeuver : MonoBehaviour
             {
                 _player.SetTargetPos(finalPos);
 
-                if (_player.Crawl(arm))
+                if (_player.Crawl(arm, potentialPoint))
                 {
                     // Debug.Log($"From ({_playerPos.X}, {_playerPos.Y})\n To ({potentialPoint.X}, {potentialPoint.Y})");
                     

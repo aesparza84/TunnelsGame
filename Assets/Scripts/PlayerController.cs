@@ -35,11 +35,21 @@ public class PlayerController : MonoBehaviour, IHideable
     //Player turning
     [SerializeField] private float TurnTime;
     private Vector3 TargetRotation;
+    private Point CurrentMapPoint;
+
+    [Header("Noie Detect Values")]
+    [SerializeField] private float CrawlSoundRadius;
+    [SerializeField] private float SoundCoolDownRate;
+    private float CurrentSoundRadius;
 
 
     //Arm Crawl Events
     public event EventHandler OnLeft;
     public event EventHandler OnRight;
+
+    //Ear Collider Array
+    private Collider[] EarColliders;
+    private const int EnemyLayer = (1 << 7);
 
     //Move event
     public event EventHandler<Tuple<OpeningSide, Side>> OnMove; //Facing-Dir, Arm side
@@ -133,6 +143,55 @@ public class PlayerController : MonoBehaviour, IHideable
         Turn(Side.RIGHT);
     }
 
+    public bool Crawl(Side side, Point newPoint)
+    {
+        if (Moving || Turning)
+            return false;
+
+        //Set the target position 
+        //Mapmove = node movement
+        //!Mapmove = free movement
+        if (!MapMove)
+            TargetPos = transform.position + (transform.forward).normalized;
+
+
+        //Only move when input matches side
+        switch (currentArm)
+        {
+            case Side.LEFT:
+                if (side == Side.LEFT)
+                {
+                    OnLeft?.Invoke(this, EventArgs.Empty);
+                    currentArm = Side.RIGHT;
+
+                    Moving = true;
+                    CurrentMapPoint = newPoint;
+                    MakeNoise(CrawlSoundRadius);
+                    return true;
+                }
+
+                break;
+            case Side.RIGHT:
+                if (side == Side.RIGHT)
+                {
+                    OnRight?.Invoke(this, EventArgs.Empty);
+                    currentArm = Side.LEFT;
+
+                    Moving = true;
+                    CurrentMapPoint = newPoint;
+                    MakeNoise(CrawlSoundRadius);
+                    return true;
+                }
+
+                break;
+            case Side.NONE:
+                break;
+            default:
+                break;
+        }
+
+        return false;
+    }
     public bool Crawl(Side side)
     {
         if (Moving || Turning)
@@ -155,6 +214,7 @@ public class PlayerController : MonoBehaviour, IHideable
                     currentArm = Side.RIGHT;
 
                     Moving = true;
+                    MakeNoise(CrawlSoundRadius);
                     return true;
                 }
 
@@ -166,6 +226,7 @@ public class PlayerController : MonoBehaviour, IHideable
                     currentArm = Side.LEFT;
 
                     Moving = true;
+                    MakeNoise(CrawlSoundRadius);
                     return true;
                 }
 
@@ -178,7 +239,6 @@ public class PlayerController : MonoBehaviour, IHideable
 
         return false;
     }
-
     private void Turn(Side newTurn)
     {
         //If currently moving or turning, dont move
@@ -213,10 +273,6 @@ public class PlayerController : MonoBehaviour, IHideable
 
         Turning = true;
     }
-    
-    
-   
-
     private void Update()
     {
         if (currentCoolDown < InputCoolDown)
@@ -224,8 +280,37 @@ public class PlayerController : MonoBehaviour, IHideable
             currentCoolDown += Time.deltaTime;
         }
 
+        if (CurrentSoundRadius > 0.0f)
+        {
+            AlertEars();
+            CurrentSoundRadius -= (SoundCoolDownRate * Time.deltaTime);
+        }
+
+
+
         HandleRotation();
         HandleMovement();
+    }
+    
+    private void MakeNoise(float noiseValue)
+    {
+        CurrentSoundRadius += noiseValue;
+    }
+
+    private void AlertEars()
+    {
+        EarColliders = Physics.OverlapSphere(transform.position, CurrentSoundRadius, EnemyLayer);
+
+        if (EarColliders.Length > 0)
+        {
+            for (int i = 0; i < EarColliders.Length; i++)
+            {
+                if (EarColliders[i].transform.parent.TryGetComponent<IEars>(out IEars e))
+                {
+                    e.Hear(CurrentMapPoint);
+                }
+            }
+        }
     }
 
     private void HandleRotation()
@@ -234,7 +319,7 @@ public class PlayerController : MonoBehaviour, IHideable
         {
             transform.rotation = Quaternion.RotateTowards(transform.rotation,
                                                           Quaternion.Euler(TargetRotation),
-                                                          TurnTime);
+                                                          TurnTime * Time.deltaTime);
 
             if (transform.rotation == Quaternion.Euler(TargetRotation))
             {
@@ -323,5 +408,11 @@ public class PlayerController : MonoBehaviour, IHideable
     public void Reveal()
     {
         _visibleStatus = VisibleStatus.VISIBLE;
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, CurrentSoundRadius);
     }
 }
