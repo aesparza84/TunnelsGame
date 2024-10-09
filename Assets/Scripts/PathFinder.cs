@@ -124,6 +124,7 @@ public class PathFinder : MonoBehaviour, IPathFinder, ICompActivate
     public void DisableComponent()
     {
         StopAllCoroutines();//Stop pathfinding coroutine
+        Calculating = false;
 
         StopTraverse(); //Stop update-loop methods
 
