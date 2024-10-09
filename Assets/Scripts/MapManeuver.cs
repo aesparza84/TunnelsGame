@@ -40,36 +40,44 @@ public class MapManeuver : MonoBehaviour
     [Header("Movement Mask")]
     [SerializeField] private LayerMask HitLayermask;
 
-    [Header("DEBUG")]
-    [SerializeField] private int X;
-    [SerializeField] private int Y;
+    //Active state of MapManeuver
+    private ActiveState _activeState;
 
+    //Static Event
+    public static event EventHandler PlayerReset;
     private void Start()
     {
         if (_pathGenerator == null)
             _pathGenerator = GetComponent<PathGenDFS>();
 
+        _playerPos = new Point(0, 0);
+
+        
+
+        //_pathGenerator.OnNewMapGenerated += UpdateMap;
+
+        LevelMessanger.LevelFinished += OnLevelFinished;
+        LevelMessanger.MapReady += OnMapReady;
+    }
+
+    private void OnMapReady(object sender, EventArgs e)
+    {
         //Get copy of Map
         Map = _pathGenerator.GridNodes;
-
-        _playerPos = new Point(0, 0);
 
         //Move Player to spawn node
         if (_player != null)
         {
-            MovePlayerToNode(_pathGenerator.SpawnNode);
+            ResetPlayerToNode(_pathGenerator.SpawnNode);
         }
 
-        _pathGenerator.OnNewMapGenerated += UpdateMap;
-
     }
 
-    private void UpdateMap(object sender, System.EventArgs e)
+    private void OnLevelFinished(object sender, EventArgs e)
     {
-        Map = _pathGenerator.GridNodes;
-        MovePlayerToNode(_pathGenerator.SpawnNode);
+        
     }
-
+    
     private void OnEnable()
     {
         if (_player != null)
@@ -81,11 +89,13 @@ public class MapManeuver : MonoBehaviour
         CheckMoveToNode(e.Item1, e.Item2);
     }
 
-    //Hard move player to node
-    private void MovePlayerToNode(GridNode gridNode)
+    //Hard move player to node, RESET
+    private void ResetPlayerToNode(GridNode gridNode)
     {
         _player.transform.position = gridNode._transform.position;
+        _player.SetTargetPos(Map[gridNode.gridPoint.X, gridNode.gridPoint.Y]._transform.position);
         _playerPos.SetPoint(gridNode.gridPoint);
+        PlayerReset?.Invoke(this, EventArgs.Empty);
     }
 
     /// 1. Determine 'Node' player wants to move to, based off direction
@@ -151,6 +161,9 @@ public class MapManeuver : MonoBehaviour
     private void OnDisable()
     {
         _player.OnMove -= OnmoveRequest;
-        _pathGenerator.OnNewMapGenerated -= UpdateMap;
+        LevelMessanger.LevelFinished -= OnLevelFinished;
+        LevelMessanger.MapReady -= OnMapReady;
     }
+
+    
 }

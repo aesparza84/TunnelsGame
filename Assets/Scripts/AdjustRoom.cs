@@ -37,6 +37,8 @@ public class AdjustRoom : MonoBehaviour
 
     //Maze Exit bool
     public bool MazeExit { get; private set; }
+
+    public static event EventHandler ExitReached;
     private void Awake()
     {
         entranceSide = OpeningSide.NONE;
@@ -213,6 +215,7 @@ public class AdjustRoom : MonoBehaviour
         //End of level
         if (MazeExit)
         {
+            ExitReached?.Invoke(this, EventArgs.Empty);
             UnityEngine.Debug.Log("Player escaped, make a new level");
         }
     }

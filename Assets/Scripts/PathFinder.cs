@@ -38,7 +38,7 @@ public class PathNode
     }
 }
 
-public class PathFinder : MonoBehaviour, IPathFinder
+public class PathFinder : MonoBehaviour, IPathFinder, ICompActivate
 {
     [Header("Maze generator")]
     [SerializeField] private PathGenDFS _pathGenerator;
@@ -75,11 +75,18 @@ public class PathFinder : MonoBehaviour, IPathFinder
     private int PathCount;
     private bool Found;
 
+    //Active state of pathfinding 
+    public ActiveState _activeState { get; private set; }
+
     public event EventHandler OnReachedPoint;
 
+    private void Awake()
+    {
+        LevelMessanger.MapReady += UpdateMap;
+    }
     private void Start()
     {
-        _pathGenerator.OnNewMapGenerated += UpdateMap;
+        //_pathGenerator.OnNewMapGenerated += UpdateMap;
 
         //Set the map
         Map = _pathGenerator.GridNodes;
@@ -94,18 +101,41 @@ public class PathFinder : MonoBehaviour, IPathFinder
 
         currentCooldown = MoveCoolDown;
 
-        SpawnAtRandomEnd();
+
+        //Start DISABLED
+        DisableComponent();
+
     }
 
-    private void OnDisable()
-    {
-        _pathGenerator.OnNewMapGenerated -= UpdateMap;
-    }
+    //Get Updated copy of the maze Map
     private void UpdateMap(object sender, System.EventArgs e)
     {
         Map = _pathGenerator.GridNodes;
-        SpawnAtRandomEnd();
     }
+
+
+    #region Behavior Toggle
+    public void ActivateComponent()
+    {
+        SpawnAtRandomEnd();
+        _activeState = ActiveState.ACTIVE;        
+    }
+
+    public void DisableComponent()
+    {
+        StopAllCoroutines();//Stop pathfinding coroutine
+
+        StopTraverse(); //Stop update-loop methods
+
+        ResetDataStructures();
+        CurrentPoint = null;
+        _activeState = ActiveState.DISABLED;
+
+        //Move out of map
+        transform.position = new Vector3(-100,0,-100);
+    }
+    #endregion
+
 
     private void ResetDataStructures()
     {
@@ -149,7 +179,7 @@ public class PathFinder : MonoBehaviour, IPathFinder
 
         while (OpenNodes.Count > 0  && !Found)
         {
-            Debug.Log("Calulating");
+            //Debug.Log("Calulating");
             iteration++;
 
             //Set current pathNode as next lowest F
@@ -159,7 +189,7 @@ public class PathFinder : MonoBehaviour, IPathFinder
             if ((currentNode.gridPoint.X == finalNode.gridPoint.X) && (currentNode.gridPoint.Y == finalNode.gridPoint.Y))
             {
                 //path complete, trace steps
-                Debug.Log("Found Path!");
+                //Debug.Log("Found Path!");
                 Found = true;
 
 
@@ -214,7 +244,7 @@ public class PathFinder : MonoBehaviour, IPathFinder
             yield return null;
         }
 
-        Debug.Log("Done");
+        //Debug.Log("Done");
 
         ShowBranchNode(currentNode);
 
@@ -377,14 +407,23 @@ public class PathFinder : MonoBehaviour, IPathFinder
             if (!item.IsExit && !item.IsHideSpot)
             {
                 HardMoveToPoint(item.gridPoint);
+                CurrentPoint = item.gridPoint;
                 break;
             }
         }
+
+        if (CurrentPoint == null)
+        {
+            CurrentPoint = GetRandomPoint();
+            HardMoveToPoint(CurrentPoint);
+        }
+
+        //Set target pos to self to not move at start
+        TargetPos = Map[CurrentPoint.X, CurrentPoint.Y]._transform.position;
     }
     private void HardMoveToPoint(Point p)
     {
         transform.position = Map[p.X, p.Y]._transform.position;
-        CurrentPoint = p;
     }
 
     private void Update()
@@ -395,8 +434,8 @@ public class PathFinder : MonoBehaviour, IPathFinder
             {
                 if (transform.position != TargetPos)
                 {
-                    transform.position = Vector3.MoveTowards(transform.position, TargetPos, MoveSpeed);
-                    transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.Euler(NextDir), 20);
+                    transform.position = Vector3.MoveTowards(transform.position, TargetPos, MoveSpeed * Time.deltaTime);
+                    transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.Euler(NextDir), 600 * Time.deltaTime);
                 }
                 else
                 {
@@ -465,7 +504,6 @@ public class PathFinder : MonoBehaviour, IPathFinder
         {
             StartCoroutine(FindBestPath(CurrentPoint, endPoint));
         }
-
     }
 
     public void SetSpeed(float speed)
@@ -516,5 +554,11 @@ public class PathFinder : MonoBehaviour, IPathFinder
         }
 
         return r_point;
+    }
+
+    //Unsubscribes
+    private void OnDisable()
+    {
+        LevelMessanger.MapReady -= UpdateMap;
     }
 }

@@ -111,40 +111,61 @@ public class PathGenDFS : MonoBehaviour
     [Header("Debug")]
     [SerializeField] private GameObject sphere;
 
-    public event EventHandler OnNewMapGenerated;
+    public static event EventHandler OnNewMapGenerated;
     void Awake()
     {
         _gridNodes = new GridNode[Width, Height];
         _nodes = new List<Node>();
         branchingNodes = new Stack<Node>();
         DeadEnds = new List<GridNode>();
-        
+
         CurrentI = 0;
 
         GenerateGrid();
         CreateRoomsDFS(startPosX, startPosY, OpeningSide.NONE, false);
+
+        //Add Dead-End nodes that might not have been marked properly
+        MarkMissingDeadEnds();
+
         CreateSpawnNode();
         CreatelevelExit();
         CreateRandomHideSpots();
-        OnNewMapGenerated?.Invoke(this, EventArgs.Empty);
     }
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            ResetMap();
-        }
+    
 
-        if (Input.GetKeyDown(KeyCode.S))
-        {
-            GenerateGrid();
-            CreateRoomsDFS(startPosX, startPosY, OpeningSide.NONE, false);
-            CreateSpawnNode();
-            CreatelevelExit();
-            CreateRandomHideSpots();
-            OnNewMapGenerated?.Invoke(this, EventArgs.Empty);
-        }
+    private void Start()
+    {
+        //Static subscription
+        LevelMessanger.LevelFinished += GenerateNewLevel;
+
+        CallNewLevel();
+    }
+
+    private void GenerateNewLevel(object sender, EventArgs e)
+    {
+        ResetMap();
+
+        GenerateGrid();
+        CreateRoomsDFS(startPosX, startPosY, OpeningSide.NONE, false);
+        
+        //Add Dead-End nodes that might not have been marked properly
+        MarkMissingDeadEnds();
+        
+        CreateSpawnNode();
+        CreatelevelExit();
+        CreateRandomHideSpots();
+
+        CallNewLevel();
+    }
+
+    private void OnDisable()
+    {
+        LevelMessanger.LevelFinished -= GenerateNewLevel;
+    }
+    private void CallNewLevel()
+    {
+        OnNewMapGenerated?.Invoke(this, EventArgs.Empty);
     }
 
     private void ResetMap()
@@ -324,7 +345,21 @@ public class PathGenDFS : MonoBehaviour
             CreateRoomsDFS(node.X, node.Y, node.EntranceSide, true);
         }
     }
-
+    private void MarkMissingDeadEnds()
+    {
+        for (int i = 0; i < Height; i++)
+        {
+            for (int j = 0; j < Width; j++)
+            {
+                if (_gridNodes[j, i].roomInfo.ExitList.Count == 1 &&
+                    !_gridNodes[j, i].DeadEnd)
+                {
+                    _gridNodes[j, i].MarkDeadEnd();
+                    DeadEnds.Add(_gridNodes[j, i]);
+                }
+            }
+        }
+    }
     private void CreateSpawnNode()
     {
         SpawnNode = DeadEnds[0];

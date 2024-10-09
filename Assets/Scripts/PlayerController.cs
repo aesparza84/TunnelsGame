@@ -6,7 +6,7 @@ using UnityEngine.InputSystem;
 
 public enum Side { LEFT, RIGHT, NONE };
 public enum VisibleStatus { VISIBLE, HIDDEN};
-public class PlayerController : MonoBehaviour, IHideable
+public class PlayerController : MonoBehaviour, IHideable, ICompActivate
 {
     //Mapped Inputs
     private PlayerControls _mappedInputs;
@@ -63,6 +63,9 @@ public class PlayerController : MonoBehaviour, IHideable
     private const float InputCoolDown = 0.25f;
     private float currentCoolDown;
 
+    //Active state of Player Controller
+    private ActiveState _activeState;
+
     private void Start()
     {
         //Start on Left side
@@ -74,6 +77,41 @@ public class PlayerController : MonoBehaviour, IHideable
         CompassDirection(Vector3.Dot(transform.forward, Vector3.forward));
 
         currentCoolDown = InputCoolDown;
+
+        LevelMessanger.LevelFinished += EndLevel;
+        LevelMessanger.LevelStart += LevelReady;
+
+        //Start Disabled
+        _activeState = ActiveState.DISABLED;
+    }
+
+    private void LevelReady(object sender, EventArgs e)
+    {
+        ActivateComponent();
+    }
+
+    private void EndLevel(object sender, EventArgs e)
+    {
+        DisableAllControls();
+    }
+
+    public void ActivateComponent()
+    {
+        currentArm = Side.LEFT;
+        _visibleStatus = VisibleStatus.VISIBLE;
+
+        TargetRotation = transform.localRotation.eulerAngles;
+
+        CompassDirection(Vector3.Dot(transform.forward, Vector3.forward));
+        currentCoolDown = InputCoolDown;
+        EnableAllControls();
+        _activeState = ActiveState.ACTIVE;
+    }
+
+    public void DisableComponent()
+    {
+        DisableAllControls();
+        _activeState = ActiveState.DISABLED;
     }
     private void OnEnable()
     {
@@ -96,6 +134,21 @@ public class PlayerController : MonoBehaviour, IHideable
         TurnRight.Enable();
         TurnRight.started += OnTurnRight;
 
+    }
+
+    private void DisableAllControls()
+    {
+        LeftArm.Disable();
+        RightArm.Disable();
+        TurnLeft.Disable();
+        RightArm.Disable();
+    }
+    private void EnableAllControls()
+    {
+        LeftArm.Enable();
+        RightArm.Enable();
+        TurnLeft.Enable();
+        RightArm.Enable();
     }
 
     private void OnRightCrawl(InputAction.CallbackContext obj)
@@ -287,9 +340,11 @@ public class PlayerController : MonoBehaviour, IHideable
         }
 
 
-
-        HandleRotation();
-        HandleMovement();
+        if (_activeState == ActiveState.ACTIVE)
+        {
+            HandleRotation();
+            HandleMovement();
+        }        
     }
     
     private void MakeNoise(float noiseValue)
@@ -398,6 +453,9 @@ public class PlayerController : MonoBehaviour, IHideable
         RightArm.started -= OnRightCrawl;
         TurnLeft.started -= OnTurnLeft;
         TurnRight.started -= OnTurnRight;
+
+        LevelMessanger.LevelFinished -= EndLevel;
+        LevelMessanger.LevelStart -= LevelReady;
     }
 
     public void Hide()
@@ -415,4 +473,6 @@ public class PlayerController : MonoBehaviour, IHideable
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, CurrentSoundRadius);
     }
+
+    
 }
