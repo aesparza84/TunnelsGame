@@ -22,10 +22,12 @@ public class PlayerCamera : MonoBehaviour
     private Vector3 TargetBackEuler;
     private Vector3 BackLeftEuler;
     private Vector3 BackRightEuler;
+    private Vector3 OverrideRotation;
     private float Forward_Z;
 
     private bool Lean;
     private bool BackLean;
+    private bool OverrideLook;
 
     //Controller reference
     private PlayerController _playerController;
@@ -40,17 +42,24 @@ public class PlayerCamera : MonoBehaviour
         if (_playerController == null)
             _playerController = GetComponent<PlayerController>();
 
+
         _playerController.OnRight += OnRightArm;
         _playerController.OnLeft += OnLeftArm;
+        _playerController.OnAttacked += OnPlayerAttacked;
+        _playerController.OnReleased += OnPlayerReleased;
+
+
 
         //Set initial lean side
-        LeanCamera(_playerController.CurrentArm);
+        LeanCamera(Side.RIGHT);
 
         BackRightEuler = new Vector3(0, 147.73f, 352.0f);
         BackLeftEuler = new Vector3(4.71f, 215.96f, 353.53f);
 
         Forward_Z = _cameraTransform.localPosition.z;
     }
+
+    
 
     private void OnEnable()
     {
@@ -92,7 +101,19 @@ public class PlayerCamera : MonoBehaviour
     }
     #endregion
 
+    #region Attack Events
+    private void OnPlayerReleased(object sender, System.EventArgs e)
+    {
+        OverrideLook = false;
+        Lean = true;
+    }
 
+    private void OnPlayerAttacked(object sender, Vector3 e)
+    {
+        OverrideLook = true;
+        OverrideRotation = (e -_cameraTransform.position).normalized;
+    }
+    #endregion
     private void OnLeftArm(object sender, System.EventArgs e)
     {
         LeanCamera(Side.LEFT);
@@ -132,11 +153,18 @@ public class PlayerCamera : MonoBehaviour
 
     private void Update()
     {
-        HandleLeaning();
+        if (OverrideLook)
+        {
+            HandleAttackCamera();
+        }
+        else
+        {
+            HandleLeaning();
+        }
     }
 
     private void HandleLeaning()
-    {
+    {        
         if (BackLean)
         {
             SetBackLean(TargetBackEuler);
@@ -146,10 +174,11 @@ public class PlayerCamera : MonoBehaviour
             //Reset camera to forward Pos if coming from beacklean
             if (_cameraTransform.localPosition.z != Forward_Z)
             {
-                _cameraTransform.localPosition = Vector3.Lerp(_cameraTransform.localPosition, new Vector3(_cameraTransform.localPosition.x,
-                                                                                                  _cameraTransform.localPosition.y,
-                                                                                                  Forward_Z),
-                                                                                                  0.8f);
+                _cameraTransform.localPosition = Vector3.Lerp(_cameraTransform.localPosition, 
+                                                              new Vector3(_cameraTransform.localPosition.x,
+                                                              _cameraTransform.localPosition.y,
+                                                              Forward_Z),
+                                                              0.8f);
             }
 
             _cameraTransform.localRotation = Quaternion.Lerp(_cameraTransform.localRotation, Quaternion.Euler(TargetForwardEuler), LeanSpeed);
@@ -160,6 +189,12 @@ public class PlayerCamera : MonoBehaviour
                 Lean = false;
             }
         }
+    }
+
+    private void HandleAttackCamera()
+    {
+        Vector3 dir = Vector3.RotateTowards(_cameraTransform.forward, OverrideRotation, LeanSpeed, 0.0f);
+        _cameraTransform.rotation = Quaternion.LookRotation(dir);
     }
 
     private void SetBackLean(Vector3 euler)
@@ -189,5 +224,7 @@ public class PlayerCamera : MonoBehaviour
 
         _playerController.OnRight -= OnRightArm;
         _playerController.OnLeft -= OnLeftArm;
+        _playerController.OnAttacked -= OnPlayerAttacked;
+        _playerController.OnReleased -= OnPlayerReleased;
     }
 }

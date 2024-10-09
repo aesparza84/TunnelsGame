@@ -6,4 +6,5 @@ public interface IHideable
 {
     public void Hide();
     public void Reveal();
+    public bool IsVisible();
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public enum EnemyState { LURKING, HUNTING, ATTACKING, LINGERING}
+public enum EnemyState { LURKING, HUNTING, ATTACKING, RETREATING, LINGERING}
 public enum ActiveState { ACTIVE, DISABLED}
 
 [RequireComponent(typeof(PathFinder))]
@@ -17,11 +17,19 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
     [Header("Move State Speeds")]
     [SerializeField] private float LurkSpeed;
     [SerializeField] private float HuntSpeed;
-    [SerializeField] private float ChaseSpeed;
 
     [Header("Linger Time")]
     [SerializeField] private float LingerTime;
     private float currentLingerTime;
+
+    [Header("Attack Cooldown")]
+    [SerializeField] private float AttackCooldown;
+    private float currentAttackTime;
+
+    private Vector3 AttackLookDirection;
+    private Quaternion PrevRotation;
+
+    private const int WallMask = (1<<6);
 
     //Current Enemy state
     //LURKING - Visiting random nodes
@@ -89,24 +97,23 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
         switch (_enemyState)
         {
             case EnemyState.LURKING:
-                if (_pathFinder._activeState == ActiveState.ACTIVE)
-                {
-                    if (!_pathFinder.Traverse && !_pathFinder.Calculating)
-                    {
-                        Debug.Log("Making new path");
-                        _pathFinder.SetNewDestination(_pathFinder.GetRandomPoint());
-                    }
-                }
-                
+                MoveToRandomPoint();
 
                 break;
             case EnemyState.HUNTING:
-                
+                //Nothing over time
 
                 break;
             case EnemyState.ATTACKING:
+                //Nothing over time
+
                 break;
 
+            case EnemyState.RETREATING:
+                MoveToRandomPoint();
+
+
+                break;
             case EnemyState.LINGERING:
                 if (currentLingerTime < LingerTime)
                 {
@@ -121,9 +128,32 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
             default:
                 break;
         }
+
+        if (currentAttackTime < AttackCooldown)
+        {
+            currentAttackTime += Time.deltaTime;
+        }
     }
+
+    private void MoveToRandomPoint()
+    {
+        if (_pathFinder._activeState == ActiveState.ACTIVE)
+        {
+            if (!_pathFinder.Traverse && !_pathFinder.Calculating)
+            {
+                Debug.Log("Making new path");
+                _pathFinder.SetNewDestination(_pathFinder.GetRandomPoint());
+            }
+        }
+    }
+
     public void Hear(Point heardPoint)
     {
+        if (_enemyState == EnemyState.RETREATING)
+        {
+            return;
+        }
+
         //Debug.Log("heard you!!");
         if (_activeState == ActiveState.ACTIVE)
         {
@@ -156,10 +186,18 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
                 
                 break;
             case EnemyState.ATTACKING:
-                _pathFinder.SetSpeed(ChaseSpeed);
-                
+                _pathFinder.StopTraverse();
+                Vector3 dir = Vector3.RotateTowards(transform.forward, AttackLookDirection, 0.2f, 0.0f);
+                dir.x = 0;
+                dir.z = 0;
+                transform.localRotation = Quaternion.LookRotation(dir);
                 break;
 
+            case EnemyState.RETREATING:
+                _pathFinder.SetSpeed(HuntSpeed);
+
+
+                break;
             case EnemyState.LINGERING:
                 currentLingerTime = 0.0f;
 
@@ -167,6 +205,64 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
             default:
                 break;
         }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (currentAttackTime >= AttackCooldown)
+        {
+            AttackIfPossible(other);
+        }
+    }
+
+    private void AttackIfPossible(Collider other)
+    {
+        Vector3 dirtTo = other.transform.position - transform.position;
+        if (Physics.Raycast(transform.position, dirtTo, dirtTo.magnitude, WallMask))
+        {
+            return;
+        }
+
+        if (other.TryGetComponent<IHideable>(out IHideable h))
+        {
+            if (h.IsVisible())
+            {
+                if (other.TryGetComponent<IVulnerable>(out IVulnerable vul))
+                {
+                    if (_enemyState != EnemyState.ATTACKING)
+                    {
+                        
+                        Debug.Log("Attacking player");
+                        EnterState(EnemyState.ATTACKING);
+                        vul.OnVulRelease += OnRelease;
+                        vul.Attack(transform.position);
+
+                        PrevRotation = transform.rotation;
+                        SetLookRotation(vul.GetLookPoint());
+
+                        currentAttackTime = 0.0f;
+                    }
+                }
+            }
+        }
+    }
+
+    private void SetLookRotation(Vector3 e)
+    {
+        AttackLookDirection = (e - transform.position).normalized;
+    }
+    private void OnRelease(object sender, Vector3 e)
+    {
+        if (sender is IVulnerable vul)
+        {
+            vul.OnVulRelease -= OnRelease;
+        }
+
+        Debug.Log("Released player");
+
+        transform.rotation = PrevRotation;
+
+        EnterState(EnemyState.RETREATING);
     }
 
     private void OnDisable()

@@ -6,7 +6,7 @@ using UnityEngine.InputSystem;
 
 public enum Side { LEFT, RIGHT, NONE };
 public enum VisibleStatus { VISIBLE, HIDDEN};
-public class PlayerController : MonoBehaviour, IHideable, ICompActivate
+public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulnerable
 {
     //Mapped Inputs
     private PlayerControls _mappedInputs;
@@ -28,9 +28,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate
     private Vector3 TargetPos;
 
     //Camera info, distance percent
-    private Vector3 startPos;
-    private float startDistance;
-    private float percentMoved;
+    [SerializeField] private Transform _camTransform;
 
     //Player turning
     [SerializeField] private float TurnTime;
@@ -47,6 +45,11 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate
     public event EventHandler OnLeft;
     public event EventHandler OnRight;
 
+    //Attack event
+    public event EventHandler<Vector3> OnAttacked;
+    public event EventHandler OnReleased;
+    public event EventHandler<Vector3> OnVulRelease;
+
     //Ear Collider Array
     private Collider[] EarColliders;
     private const int EnemyLayer = (1 << 7);
@@ -56,7 +59,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate
     [SerializeField] private bool MapMove;
 
     //Visible Status
-    private VisibleStatus _visibleStatus;
+    private bool Visible;
 
     private bool Turning;
     private bool Moving;
@@ -66,11 +69,13 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate
     //Active state of Player Controller
     private ActiveState _activeState;
 
+    private bool Attacked;
+
     private void Start()
     {
         //Start on Left side
         currentArm = Side.LEFT;
-        _visibleStatus = VisibleStatus.VISIBLE;
+        Visible = true;
 
         TargetRotation = transform.localRotation.eulerAngles;
 
@@ -98,7 +103,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate
     public void ActivateComponent()
     {
         currentArm = Side.LEFT;
-        _visibleStatus = VisibleStatus.VISIBLE;
+        Visible = true;
 
         TargetRotation = transform.localRotation.eulerAngles;
 
@@ -328,23 +333,33 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate
     }
     private void Update()
     {
-        if (currentCoolDown < InputCoolDown)
+        if (Attacked)
         {
-            currentCoolDown += Time.deltaTime;
+            if (Input.GetKeyDown(KeyCode.O))
+            {
+                Release();
+            }
         }
-
-        if (CurrentSoundRadius > 0.0f)
+        else
         {
-            AlertEars();
-            CurrentSoundRadius -= (SoundCoolDownRate * Time.deltaTime);
-        }
+            if (currentCoolDown < InputCoolDown)
+            {
+                currentCoolDown += Time.deltaTime;
+            }
+
+            if (CurrentSoundRadius > 0.0f)
+            {
+                AlertEars();
+                CurrentSoundRadius -= (SoundCoolDownRate * Time.deltaTime);
+            }
 
 
-        if (_activeState == ActiveState.ACTIVE)
-        {
-            HandleRotation();
-            HandleMovement();
-        }        
+            if (_activeState == ActiveState.ACTIVE)
+            {
+                HandleRotation();
+                HandleMovement();
+            }
+        }            
     }
     
     private void MakeNoise(float noiseValue)
@@ -460,19 +475,41 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate
 
     public void Hide()
     {
-        _visibleStatus = VisibleStatus.HIDDEN;
+        Visible = false;
     }
 
     public void Reveal()
     {
-        _visibleStatus = VisibleStatus.VISIBLE;
+        Visible = true;
+
     }
 
+    public bool IsVisible()
+    {
+        return Visible;
+    }
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, CurrentSoundRadius);
     }
 
-    
+    public void Attack(Vector3 p)
+    {
+        OnAttacked?.Invoke(this, p);
+        DisableAllControls();
+        Attacked = true;
+    }
+
+    public Vector3 GetLookPoint()
+    {
+        return _camTransform.position;
+    }
+    public void Release()
+    {
+        OnReleased?.Invoke(this, EventArgs.Empty);
+        OnVulRelease?.Invoke(this, _camTransform.position);
+        EnableAllControls();
+        Attacked = false;
+    }
 }
