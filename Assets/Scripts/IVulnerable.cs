@@ -8,6 +8,6 @@ public interface IVulnerable
     public event EventHandler OnVulRelease;
     public void Attack(Vector3 p, int time);
     public void Release();
-    public void Retaliate(bool inFront);
+    public void Retaliate(bool inFront, ref Weapon w);
     public Vector3 GetLookPoint();
 }

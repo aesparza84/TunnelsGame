@@ -436,7 +436,7 @@ public class PathFinder : MonoBehaviour, IPathFinder, ICompActivate
                 if (transform.position != TargetPos)
                 {
                     transform.position = Vector3.MoveTowards(transform.position, TargetPos, MoveSpeed * Time.deltaTime);
-                    transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.Euler(NextDir), 600 * Time.deltaTime);
+                    transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.Euler(NextDir), 1000 * Time.deltaTime);
                 }
                 else
                 {

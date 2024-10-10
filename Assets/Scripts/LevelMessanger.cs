@@ -12,6 +12,8 @@ public class LevelMessanger : MonoBehaviour
 
     private void Awake()
     {
+        Application.targetFrameRate = 240;
+
         //Static
         AdjustRoom.ExitReached += LevelFinish;
         PathGenDFS.OnNewMapGenerated += MapCompleted;

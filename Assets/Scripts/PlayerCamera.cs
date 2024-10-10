@@ -44,6 +44,7 @@ public class PlayerCamera : MonoBehaviour
     private bool Lean;
     private bool BackLean;
     private bool OverrideLook;
+    private Side PrevArm;
 
     //Controller reference
     private PlayerController _playerController;
@@ -127,7 +128,7 @@ public class PlayerCamera : MonoBehaviour
         CameraNoise_Normal();
 
         OverrideLook = false;
-        Lean = true;
+        LeanCamera(PrevArm);
     }
 
     private void OnPlayerAttacked(object sender, Vector3 e)
@@ -188,17 +189,19 @@ public class PlayerCamera : MonoBehaviour
         //If currently leaning, dont lean again
         if (Lean)
             return;
-
+        
         //Set Target lean angle
         switch (leanSide)
         {
             case Side.LEFT:
                 Z_TargetAngle = LeftAngle;
 
+                PrevArm = leanSide;
                 break;
             case Side.RIGHT:
                 Z_TargetAngle = RightAngle;
 
+                PrevArm = leanSide;
                 break;
             case Side.NONE:
                 break;

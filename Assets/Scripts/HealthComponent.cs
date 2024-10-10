@@ -10,11 +10,20 @@ public class HealthComponent : MonoBehaviour, IHealth
     [SerializeField] private int MaxHealth;
     private int Health;
 
-    public event EventHandler OnPlayerDeath;
+    public static event EventHandler OnPlayerDeath;
     private void Start()
     {
         Health = MaxHealth;
     }
+
+    public void Heal(int n)
+    {
+        Health += n;
+
+        if (Health >MaxHealth)
+            Health = MaxHealth;
+    }
+
     public void TakeDamage(int n)
     {
         Health -= n;

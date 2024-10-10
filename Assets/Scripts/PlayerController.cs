@@ -49,6 +49,11 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
     [Header("Retaliate Cooldown")]
     [SerializeField] private float AttackCoolDown;
     private float currentAttackCooldown;
+
+    //Retaliate Weapons
+    private Weapon _weaponHand;
+    private Weapon _weaponFoot;
+
     private bool CanAttack { get { return currentAttackCooldown >= AttackCoolDown; } }
     private bool AttackingFromFront;
 
@@ -227,7 +232,13 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
     {
         if (CanAttack)
         {
-            Retaliate(true);
+            if (_weaponHand != null)
+            {
+                if (!_weaponHand.Broken)
+                {
+                    Retaliate(true, ref _weaponHand);
+                }
+            }
         }
     }
 
@@ -235,7 +246,13 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
     {
         if (CanAttack)
         {
-            Retaliate(false);
+            if (_weaponFoot != null)
+            {
+                if (!_weaponFoot.Broken)
+                {
+                    Retaliate(false, ref _weaponFoot);
+                }
+            }
         }
     }
     #endregion
@@ -472,7 +489,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
         {
             if (transform.position != TargetPos)
             {
-                transform.position = Vector3.MoveTowards(transform.position, TargetPos, MoveSpeed);
+                transform.position = Vector3.MoveTowards(transform.position, TargetPos, MoveSpeed * Time.deltaTime);
             }
             else
             {
@@ -507,9 +524,36 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
         RightArm.started -= OnRightCrawl;
         TurnLeft.started -= OnTurnLeft;
         TurnRight.started -= OnTurnRight;
+        Kick.started -= OnKick;
+        Punch.started -= OnPunch;
 
         LevelMessanger.LevelFinished -= EndLevel;
         LevelMessanger.LevelStart -= LevelReady;
+    }
+
+    public void SetWeapon(Weapon w)
+    {
+        if (w.HandSide) //If the weapon is meant for hand
+        {
+            if (_weaponHand != null)
+            {
+                //Make trash noise
+            }
+
+            //Replace hand weapon
+            _weaponHand = w;
+        }
+        else
+        {
+            if (_weaponFoot != null)
+            {
+                //Make trash noise
+            }
+
+            //Replace hand weapon
+            _weaponFoot = w;
+        }
+
     }
 
     public void Hide()
@@ -580,17 +624,17 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
         return _camTransform.position;
     }
 
-    public void Retaliate(bool inFront)
+    public void Retaliate(bool inFront, ref Weapon w)
     {
         //If the side matches the enemy side, Successful attack
         if (inFront == AttackingFromFront)
         {
             //Reduce time 
-            currentEncounterTime++;
+            w.UseWeapon();
+            currentEncounterTime += w.Stagger;
+            OnRetaliate?.Invoke(this, EventArgs.Empty);
+            currentAttackCooldown = 0.0f;
         }
-
-        OnRetaliate?.Invoke(this, EventArgs.Empty);
-        currentAttackCooldown = 0.0f;
     }
     
     public void Release()

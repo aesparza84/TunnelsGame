@@ -98,6 +98,7 @@ public class PathGenDFS : MonoBehaviour
     [SerializeField] private int RecursiveCap;
     private int CurrentI;
 
+
     //Map componenets
     private GridNode[,] _gridNodes;
     public List<GridNode> DeadEnds { get; private set;}
@@ -417,6 +418,8 @@ public class PathGenDFS : MonoBehaviour
             }
         }
     }
+
+    
     private List<Node> CheckNodeneighbors(int X, int Y)
     {
         List<Node> neighbors = new List<Node>();
