@@ -8,12 +8,19 @@ public class AdjustRoom : MonoBehaviour
 {
     [Header("Roof")]
     [SerializeField] private GameObject Roof;
+    [SerializeField] private Light _exitLight;
 
     [Header("Walls")]
     [SerializeField] private GameObject N_Wall;
     [SerializeField] private GameObject E_Wall;
     [SerializeField] private GameObject S_Wall;
     [SerializeField] private GameObject W_Wall;
+
+    [Header("Unlit Walls (Map)")]
+    [SerializeField] private GameObject N_UnlitWall;
+    [SerializeField] private GameObject E_UnlitWall;
+    [SerializeField] private GameObject S_UnlitWall;
+    [SerializeField] private GameObject W_UnlitWall;
 
     [Header("Hide Walls")]
     [SerializeField] private GameObject Hide_N_Wall;
@@ -46,6 +53,8 @@ public class AdjustRoom : MonoBehaviour
         ExitList = new List<OpeningSide>();
         ExitCount = 0;
 
+        _exitLight.enabled = false;
+
         if (RoomTrigger != null)
             RoomTrigger.enabled = false;
     }
@@ -58,21 +67,25 @@ public class AdjustRoom : MonoBehaviour
         {
             case OpeningSide.N:
                 N_Wall.SetActive(false);
+                N_UnlitWall.SetActive(false);
                 ExitList.Add(OpeningSide.N);
 
                 break;
             case OpeningSide.E:
                 E_Wall.SetActive(false);
+                E_UnlitWall.SetActive(false);
                 ExitList.Add(OpeningSide.E);
 
                 break;
             case OpeningSide.S:
                 S_Wall.SetActive(false);
+                S_UnlitWall.SetActive(false);
                 ExitList.Add(OpeningSide.S);
 
                 break;
             case OpeningSide.W:
                 W_Wall.SetActive(false);
+                W_UnlitWall.SetActive(false);
                 ExitList.Add(OpeningSide.W);
 
                 break;
@@ -97,6 +110,7 @@ public class AdjustRoom : MonoBehaviour
                     if (N_Wall.activeInHierarchy)
                     {
                         N_Wall.SetActive(false);
+                        N_UnlitWall.SetActive(false);
                         ExitCount++;
 
                         ExitList.Add(OpeningSide.N);
@@ -107,6 +121,7 @@ public class AdjustRoom : MonoBehaviour
                     if (E_Wall.activeInHierarchy)
                     {
                         E_Wall.SetActive(false);
+                        E_UnlitWall.SetActive(false);
                         ExitCount++;
 
                         ExitList.Add(OpeningSide.E);
@@ -118,8 +133,9 @@ public class AdjustRoom : MonoBehaviour
                     if (S_Wall.activeInHierarchy)
                     {
                         S_Wall.SetActive(false);
+                        S_UnlitWall.SetActive(false);
                         ExitCount++;
-                     
+
                         ExitList.Add(OpeningSide.S);
                     }
 
@@ -130,6 +146,7 @@ public class AdjustRoom : MonoBehaviour
                     if (W_Wall.activeInHierarchy)
                     {
                         W_Wall.SetActive(false);
+                        W_UnlitWall.SetActive(false);
                         ExitCount++;
                         ExitList.Add(OpeningSide.W);
                     }
@@ -187,6 +204,9 @@ public class AdjustRoom : MonoBehaviour
         {
             Roof.SetActive(true);
         }
+
+        _exitLight.enabled = true;
+
     }
     public bool HasZeroExits()
     {

@@ -43,6 +43,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
 
     [Header("Noie Detect Values")]
     [SerializeField] private float CrawlSoundRadius;
+    [SerializeField] private float MaxSoundRadius;
     [SerializeField] private float SoundCoolDownRate;
     private float CurrentSoundRadius;
 
@@ -421,6 +422,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
     private void MakeNoise(float noiseValue)
     {
         CurrentSoundRadius += noiseValue;
+        CurrentSoundRadius = Mathf.Clamp(CurrentSoundRadius, 0, MaxSoundRadius);
     }
 
     private void AlertEars()
