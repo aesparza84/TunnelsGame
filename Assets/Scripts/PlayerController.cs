@@ -11,6 +11,9 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
     //Mapped Inputs
     private PlayerControls _mappedInputs;
 
+    [Header("Health")]
+    [SerializeField] private HealthComponent _healthComponent;
+
     //Input references
     private InputAction LeftArm;
     private InputAction RightArm;
@@ -45,10 +48,11 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
     public event EventHandler OnLeft;
     public event EventHandler OnRight;
 
-    //Attack event
+    //Attack events & fields
     public event EventHandler<Vector3> OnAttacked;
     public event EventHandler OnReleased;
-    public event EventHandler<Vector3> OnVulRelease;
+    public event EventHandler OnVulRelease;
+    private int currentEncounterTime;
 
     //Ear Collider Array
     private Collider[] EarColliders;
@@ -335,10 +339,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
     {
         if (Attacked)
         {
-            if (Input.GetKeyDown(KeyCode.O))
-            {
-                Release();
-            }
+            
         }
         else
         {
@@ -494,21 +495,43 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
         Gizmos.DrawWireSphere(transform.position, CurrentSoundRadius);
     }
 
-    public void Attack(Vector3 p)
+    public void Attack(Vector3 p, int encounterSeconds)
     {
         OnAttacked?.Invoke(this, p);
         DisableAllControls();
         Attacked = true;
+
+        StartCoroutine(AttackCoroutine(_healthComponent, encounterSeconds));
     }
+    private IEnumerator AttackCoroutine(IHealth hel, int EncounterTime)
+    {
+        currentEncounterTime = 0;
+        while (currentEncounterTime < EncounterTime)
+        {
+            yield return new WaitForSeconds(1);
+            currentEncounterTime++;
+            Debug.Log(currentEncounterTime + " Second(s) have passed");
+
+            hel.TakeDamage(1);
+
+            yield return null;
+        }
+
+        Release();
+        yield return null;
+    }
+
 
     public Vector3 GetLookPoint()
     {
         return _camTransform.position;
     }
+
+
     public void Release()
     {
         OnReleased?.Invoke(this, EventArgs.Empty);
-        OnVulRelease?.Invoke(this, _camTransform.position);
+        OnVulRelease?.Invoke(this, EventArgs.Empty);
         EnableAllControls();
         Attacked = false;
     }

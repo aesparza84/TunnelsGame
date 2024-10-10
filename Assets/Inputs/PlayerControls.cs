@@ -80,6 +80,24 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Punch"",
+                    ""type"": ""Button"",
+                    ""id"": ""1e69b5d3-fe38-423b-8a46-556cfc91ca6a"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Kick"",
+                    ""type"": ""Button"",
+                    ""id"": ""f9f2f0b8-77dc-427a-a645-c6a295bba383"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -148,6 +166,28 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""action"": ""CamBehindRight"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""ba90f12d-48e1-43ec-952b-b72b5944b1c1"",
+                    ""path"": ""<Keyboard>/f"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Punch"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""4d4849b3-3827-44d9-9a93-b92bedd1b931"",
+                    ""path"": ""<Keyboard>/space"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Kick"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -162,6 +202,8 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         m_Crawl_CamRight = m_Crawl.FindAction("CamRight", throwIfNotFound: true);
         m_Crawl_CamBehindLeft = m_Crawl.FindAction("CamBehindLeft", throwIfNotFound: true);
         m_Crawl_CamBehindRight = m_Crawl.FindAction("CamBehindRight", throwIfNotFound: true);
+        m_Crawl_Punch = m_Crawl.FindAction("Punch", throwIfNotFound: true);
+        m_Crawl_Kick = m_Crawl.FindAction("Kick", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -229,6 +271,8 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     private readonly InputAction m_Crawl_CamRight;
     private readonly InputAction m_Crawl_CamBehindLeft;
     private readonly InputAction m_Crawl_CamBehindRight;
+    private readonly InputAction m_Crawl_Punch;
+    private readonly InputAction m_Crawl_Kick;
     public struct CrawlActions
     {
         private @PlayerControls m_Wrapper;
@@ -239,6 +283,8 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         public InputAction @CamRight => m_Wrapper.m_Crawl_CamRight;
         public InputAction @CamBehindLeft => m_Wrapper.m_Crawl_CamBehindLeft;
         public InputAction @CamBehindRight => m_Wrapper.m_Crawl_CamBehindRight;
+        public InputAction @Punch => m_Wrapper.m_Crawl_Punch;
+        public InputAction @Kick => m_Wrapper.m_Crawl_Kick;
         public InputActionMap Get() { return m_Wrapper.m_Crawl; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -266,6 +312,12 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @CamBehindRight.started += instance.OnCamBehindRight;
             @CamBehindRight.performed += instance.OnCamBehindRight;
             @CamBehindRight.canceled += instance.OnCamBehindRight;
+            @Punch.started += instance.OnPunch;
+            @Punch.performed += instance.OnPunch;
+            @Punch.canceled += instance.OnPunch;
+            @Kick.started += instance.OnKick;
+            @Kick.performed += instance.OnKick;
+            @Kick.canceled += instance.OnKick;
         }
 
         private void UnregisterCallbacks(ICrawlActions instance)
@@ -288,6 +340,12 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @CamBehindRight.started -= instance.OnCamBehindRight;
             @CamBehindRight.performed -= instance.OnCamBehindRight;
             @CamBehindRight.canceled -= instance.OnCamBehindRight;
+            @Punch.started -= instance.OnPunch;
+            @Punch.performed -= instance.OnPunch;
+            @Punch.canceled -= instance.OnPunch;
+            @Kick.started -= instance.OnKick;
+            @Kick.performed -= instance.OnKick;
+            @Kick.canceled -= instance.OnKick;
         }
 
         public void RemoveCallbacks(ICrawlActions instance)
@@ -313,5 +371,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         void OnCamRight(InputAction.CallbackContext context);
         void OnCamBehindLeft(InputAction.CallbackContext context);
         void OnCamBehindRight(InputAction.CallbackContext context);
+        void OnPunch(InputAction.CallbackContext context);
+        void OnKick(InputAction.CallbackContext context);
     }
 }

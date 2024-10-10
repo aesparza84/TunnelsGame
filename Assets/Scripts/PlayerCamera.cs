@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -17,12 +18,19 @@ public class PlayerCamera : MonoBehaviour
     [SerializeField] private float BackLeanSpeed;
     private float Z_TargetAngle;
 
+    [Header("Camera Noise Values")]
+    [SerializeField] private float AttackAmplitude;
+    [SerializeField] private float AttackFrequency;
+    [SerializeField] private float CrawlAmplitude;
+    [SerializeField] private float CrawlFrequency;
+    private CinemachineBasicMultiChannelPerlin _cameraNoise;
+
     //Camera rotations
     private Vector3 TargetForwardEuler;
     private Vector3 TargetBackEuler;
     private Vector3 BackLeftEuler;
     private Vector3 BackRightEuler;
-    private Vector3 OverrideRotation;
+    private Quaternion OverrideRotation;
     private float Forward_Z;
 
     private bool Lean;
@@ -43,6 +51,9 @@ public class PlayerCamera : MonoBehaviour
             _playerController = GetComponent<PlayerController>();
 
 
+        _cameraNoise = _camera.GetComponentInChildren<CinemachineBasicMultiChannelPerlin>();
+
+
         _playerController.OnRight += OnRightArm;
         _playerController.OnLeft += OnLeftArm;
         _playerController.OnAttacked += OnPlayerAttacked;
@@ -57,9 +68,11 @@ public class PlayerCamera : MonoBehaviour
         BackLeftEuler = new Vector3(4.71f, 215.96f, 353.53f);
 
         Forward_Z = _cameraTransform.localPosition.z;
+        CameraNoise_Normal();
+
     }
 
-    
+
 
     private void OnEnable()
     {
@@ -104,6 +117,8 @@ public class PlayerCamera : MonoBehaviour
     #region Attack Events
     private void OnPlayerReleased(object sender, System.EventArgs e)
     {
+        CameraNoise_Normal();
+
         OverrideLook = false;
         Lean = true;
     }
@@ -111,9 +126,26 @@ public class PlayerCamera : MonoBehaviour
     private void OnPlayerAttacked(object sender, Vector3 e)
     {
         OverrideLook = true;
-        OverrideRotation = (e -_cameraTransform.position).normalized;
+
+        CameraNoise_Attack();
+
+        Vector3 dir = (e - _cameraTransform.position).normalized;
+        dir.y = 0;
+        OverrideRotation = Quaternion.LookRotation(dir, Vector3.up);
     }
     #endregion
+
+    private void CameraNoise_Attack()
+    {
+        _cameraNoise.AmplitudeGain = AttackAmplitude;
+        _cameraNoise.FrequencyGain = AttackFrequency;
+    }
+    private void CameraNoise_Normal()
+    {
+        _cameraNoise.AmplitudeGain = CrawlAmplitude;
+        _cameraNoise.FrequencyGain = CrawlFrequency;
+    }
+
     private void OnLeftArm(object sender, System.EventArgs e)
     {
         LeanCamera(Side.LEFT);
@@ -190,11 +222,9 @@ public class PlayerCamera : MonoBehaviour
             }
         }
     }
-
     private void HandleAttackCamera()
     {
-        Vector3 dir = Vector3.RotateTowards(_cameraTransform.forward, OverrideRotation, LeanSpeed, 0.0f);
-        _cameraTransform.rotation = Quaternion.LookRotation(dir);
+        _cameraTransform.rotation = Quaternion.Lerp(_cameraTransform.rotation, OverrideRotation, LeanSpeed);
     }
 
     private void SetBackLean(Vector3 euler)

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -26,7 +27,11 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
     [SerializeField] private float AttackCooldown;
     private float currentAttackTime;
 
-    private Vector3 AttackLookDirection;
+    [Header("Encounter Time")]
+    [SerializeField] private int EncounterTime;
+
+    //Attacking victim look rotations
+    private Quaternion AttackLookDirection;
     private Quaternion PrevRotation;
 
     private const int WallMask = (1<<6);
@@ -75,6 +80,7 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
     {
         _pathFinder.ActivateComponent();
         _activeState = ActiveState.ACTIVE;
+        currentAttackTime = AttackCooldown;
         EnterState(EnemyState.LURKING);
     }
     public void DisableComponent()
@@ -105,8 +111,10 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
 
                 break;
             case EnemyState.ATTACKING:
-                //Nothing over time
+                //Look towards Victim
+                transform.localRotation = Quaternion.Lerp(transform.rotation, AttackLookDirection, 0.2f);
 
+                
                 break;
 
             case EnemyState.RETREATING:
@@ -129,10 +137,14 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
                 break;
         }
 
-        if (currentAttackTime < AttackCooldown)
+        if (_enemyState != EnemyState.ATTACKING)
         {
-            currentAttackTime += Time.deltaTime;
+            if (currentAttackTime < AttackCooldown)
+            {
+                currentAttackTime += Time.deltaTime;
+            }
         }
+        
     }
 
     private void MoveToRandomPoint()
@@ -187,10 +199,7 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
                 break;
             case EnemyState.ATTACKING:
                 _pathFinder.StopTraverse();
-                Vector3 dir = Vector3.RotateTowards(transform.forward, AttackLookDirection, 0.2f, 0.0f);
-                dir.x = 0;
-                dir.z = 0;
-                transform.localRotation = Quaternion.LookRotation(dir);
+
                 break;
 
             case EnemyState.RETREATING:
@@ -235,23 +244,26 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
                         Debug.Log("Attacking player");
                         EnterState(EnemyState.ATTACKING);
                         vul.OnVulRelease += OnRelease;
-                        vul.Attack(transform.position);
+                        vul.Attack(transform.position, EncounterTime);
 
+                        currentAttackTime = 0;
                         PrevRotation = transform.rotation;
                         SetLookRotation(vul.GetLookPoint());
-
-                        currentAttackTime = 0.0f;
                     }
                 }
             }
         }
     }
-
+    
     private void SetLookRotation(Vector3 e)
     {
-        AttackLookDirection = (e - transform.position).normalized;
+        Vector3 dir = (e - transform.position).normalized;
+        dir.y = 0;
+        AttackLookDirection = Quaternion.LookRotation(dir, Vector3.up);
     }
-    private void OnRelease(object sender, Vector3 e)
+
+    
+    private void OnRelease(object sender, System.EventArgs e)
     {
         if (sender is IVulnerable vul)
         {

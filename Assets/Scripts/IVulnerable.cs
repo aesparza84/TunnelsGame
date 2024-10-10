@@ -5,8 +5,8 @@ using UnityEngine;
 
 public interface IVulnerable 
 {
-    public event EventHandler<Vector3> OnVulRelease;
-    public void Attack(Vector3 p);
+    public event EventHandler OnVulRelease;
+    public void Attack(Vector3 p, int time);
     public void Release();
     public Vector3 GetLookPoint();
 }
