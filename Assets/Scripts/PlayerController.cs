@@ -6,6 +6,7 @@ using UnityEngine.InputSystem;
 
 public enum Side { LEFT, RIGHT, NONE };
 public enum VisibleStatus { VISIBLE, HIDDEN};
+
 public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulnerable
 {
     //Mapped Inputs
@@ -19,6 +20,8 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
     private InputAction RightArm;
     private InputAction TurnLeft;
     private InputAction TurnRight;
+    private InputAction Punch;
+    private InputAction Kick;
 
     private Side currentArm;
     public Side CurrentArm { get { return currentArm; } }
@@ -43,6 +46,11 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
     [SerializeField] private float SoundCoolDownRate;
     private float CurrentSoundRadius;
 
+    [Header("Retaliate Cooldown")]
+    [SerializeField] private float AttackCoolDown;
+    private float currentAttackCooldown;
+    private bool CanAttack { get { return currentAttackCooldown >= AttackCoolDown; } }
+    private bool AttackingFromFront;
 
     //Arm Crawl Events
     public event EventHandler OnLeft;
@@ -52,6 +60,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
     public event EventHandler<Vector3> OnAttacked;
     public event EventHandler OnReleased;
     public event EventHandler OnVulRelease;
+    public event EventHandler OnRetaliate;
     private int currentEncounterTime;
 
     //Ear Collider Array
@@ -143,7 +152,14 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
         TurnRight.Enable();
         TurnRight.started += OnTurnRight;
 
-    }
+        Punch = _mappedInputs.Crawl.Punch;
+        Punch.Disable();
+        Punch.started += OnPunch;
+
+        Kick = _mappedInputs.Crawl.Kick;
+        Kick.Disable();
+        Kick.started += OnKick;
+    }   
 
     private void DisableAllControls()
     {
@@ -196,6 +212,8 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
 
         currentCoolDown = 0.0f;
     }
+
+    #region Action Map Inputs
     private void OnTurnLeft(InputAction.CallbackContext obj)
     {
         Turn(Side.LEFT);
@@ -205,6 +223,22 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
         Turn(Side.RIGHT);
     }
 
+    private void OnPunch(InputAction.CallbackContext obj)
+    {
+        if (CanAttack)
+        {
+            Retaliate(true);
+        }
+    }
+
+    private void OnKick(InputAction.CallbackContext obj)
+    {
+        if (CanAttack)
+        {
+            Retaliate(false);
+        }
+    }
+    #endregion
     public bool Crawl(Side side, Point newPoint)
     {
         if (Moving || Turning)
@@ -339,7 +373,11 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
     {
         if (Attacked)
         {
-            
+            //Attack Cooldown
+            if (!CanAttack)
+            {
+                currentAttackCooldown += Time.deltaTime;
+            }
         }
         else
         {
@@ -360,7 +398,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
                 HandleRotation();
                 HandleMovement();
             }
-        }            
+        }
     }
     
     private void MakeNoise(float noiseValue)
@@ -497,6 +535,21 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
 
     public void Attack(Vector3 p, int encounterSeconds)
     {
+        Vector3 dir = (p - transform.position).normalized;
+        float dot = Vector3.Dot(transform.forward, dir);
+        currentAttackCooldown = AttackCoolDown; //Reset attack timer
+
+        //Set to front by default, change if needed by DOT
+        AttackingFromFront = true;
+
+        if (dot < 0)
+        {
+            AttackingFromFront = false;
+        }
+
+        Punch.Enable();
+        Kick.Enable();
+
         OnAttacked?.Invoke(this, p);
         DisableAllControls();
         Attacked = true;
@@ -527,9 +580,24 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
         return _camTransform.position;
     }
 
+    public void Retaliate(bool inFront)
+    {
+        //If the side matches the enemy side, Successful attack
+        if (inFront == AttackingFromFront)
+        {
+            //Reduce time 
+            currentEncounterTime++;
+        }
 
+        OnRetaliate?.Invoke(this, EventArgs.Empty);
+        currentAttackCooldown = 0.0f;
+    }
+    
     public void Release()
     {
+        Punch.Disable();
+        Kick.Disable();
+
         OnReleased?.Invoke(this, EventArgs.Empty);
         OnVulRelease?.Invoke(this, EventArgs.Empty);
         EnableAllControls();

@@ -23,7 +23,15 @@ public class PlayerCamera : MonoBehaviour
     [SerializeField] private float AttackFrequency;
     [SerializeField] private float CrawlAmplitude;
     [SerializeField] private float CrawlFrequency;
+
+    [Header("Camera Attack Noise Values")]
+    [SerializeField] private float RetaliateForce;
+    private float RetalTimer;
+
+    //Cinemachine Components
     private CinemachineBasicMultiChannelPerlin _cameraNoise;
+    private CinemachineImpulseListener _impulseListener;
+    private CinemachineImpulseSource _impulseSource;
 
     //Camera rotations
     private Vector3 TargetForwardEuler;
@@ -52,13 +60,14 @@ public class PlayerCamera : MonoBehaviour
 
 
         _cameraNoise = _camera.GetComponentInChildren<CinemachineBasicMultiChannelPerlin>();
-
+        _impulseListener = _camera.GetComponentInChildren<CinemachineImpulseListener>();
+        _impulseSource = transform.GetComponentInChildren<CinemachineImpulseSource>();
 
         _playerController.OnRight += OnRightArm;
         _playerController.OnLeft += OnLeftArm;
         _playerController.OnAttacked += OnPlayerAttacked;
         _playerController.OnReleased += OnPlayerReleased;
-
+        _playerController.OnRetaliate += OnPlayerRetaliate;
 
 
         //Set initial lean side
@@ -71,8 +80,6 @@ public class PlayerCamera : MonoBehaviour
         CameraNoise_Normal();
 
     }
-
-
 
     private void OnEnable()
     {
@@ -130,8 +137,17 @@ public class PlayerCamera : MonoBehaviour
         CameraNoise_Attack();
 
         Vector3 dir = (e - _cameraTransform.position).normalized;
-        dir.y = 0;
+        
+
         OverrideRotation = Quaternion.LookRotation(dir, Vector3.up);
+        Vector3 v = OverrideRotation.eulerAngles;
+        v.z = TargetForwardEuler.z;
+        OverrideRotation = Quaternion.Euler(v);
+    }
+    private void OnPlayerRetaliate(object sender, System.EventArgs e)
+    {
+        //_impulseListener
+        _impulseSource.GenerateImpulseWithForce(RetaliateForce);
     }
     #endregion
 
@@ -144,6 +160,18 @@ public class PlayerCamera : MonoBehaviour
     {
         _cameraNoise.AmplitudeGain = CrawlAmplitude;
         _cameraNoise.FrequencyGain = CrawlFrequency;
+    }
+    private void Impulse_Retaliate()
+    {
+        _impulseListener.ReactionSettings.AmplitudeGain = _cameraNoise.AmplitudeGain;
+        _impulseListener.ReactionSettings.FrequencyGain = _cameraNoise.FrequencyGain;
+        _impulseListener.ReactionSettings.Duration = RetalTimer;
+    }
+    private void Impulse_Reset()
+    {
+        _impulseListener.ReactionSettings.AmplitudeGain = 0;
+        _impulseListener.ReactionSettings.FrequencyGain = 0;
+        _impulseListener.ReactionSettings.Duration = 0;
     }
 
     private void OnLeftArm(object sender, System.EventArgs e)
@@ -256,5 +284,6 @@ public class PlayerCamera : MonoBehaviour
         _playerController.OnLeft -= OnLeftArm;
         _playerController.OnAttacked -= OnPlayerAttacked;
         _playerController.OnReleased -= OnPlayerReleased;
+        _playerController.OnRetaliate -= OnPlayerRetaliate;
     }
 }
