@@ -23,6 +23,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
     private InputAction Punch;
     private InputAction Kick;
     private InputAction CheckMap;
+    private InputAction DooHickyMode;
 
     private Side currentArm;
     public Side CurrentArm { get { return currentArm; } }
@@ -75,6 +76,9 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
     public event EventHandler<Side> OnPlayerMoved;
     private int currentEncounterTime;
 
+    //Misc. events
+    public event EventHandler OnHickySwitch;
+
     //Ear Collider Array
     private Collider[] EarColliders;
     private const int EnemyLayer = (1 << 7);
@@ -82,6 +86,8 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
     //Move event
     public event EventHandler<Tuple<OpeningSide, Side>> OnMove; //Facing-Dir, Arm side
     [SerializeField] private bool MapMove;
+
+
 
     //Map using bool
     private bool CheckingMap;
@@ -183,9 +189,11 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
         CheckMap.Enable();
         CheckMap.started += OnMapOpen;
         CheckMap.canceled += OnCloseMap;
-    }
 
-    
+        DooHickyMode = _mappedInputs.Crawl.DooHickySwitch;
+        DooHickyMode.Enable();
+        DooHickyMode.started += OnDooHickySwitch;
+    }
 
     private void DisableAllControls()
     {
@@ -194,6 +202,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
         TurnLeft.Disable();
         RightArm.Disable();
         CheckMap.Disable();
+        DooHickyMode.Disable();
     }
     private void EnableAllControls()
     {
@@ -202,6 +211,11 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
         TurnLeft.Enable();
         RightArm.Enable();
         CheckMap.Enable();
+        DooHickyMode.Enable();
+    }
+    private void OnDooHickySwitch(InputAction.CallbackContext obj)
+    {
+        OnHickySwitch?.Invoke(this, EventArgs.Empty);
     }
     private void OnMapOpen(InputAction.CallbackContext obj)
     {
@@ -569,6 +583,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
         Kick.started -= OnKick;
         Punch.started -= OnPunch;
         CheckMap.started -= OnMapOpen;
+        DooHickyMode.started -= OnDooHickySwitch;
 
         LevelMessanger.LevelFinished -= EndLevel;
         LevelMessanger.LevelStart -= LevelReady;

@@ -107,6 +107,15 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""DooHickySwitch"",
+                    ""type"": ""Button"",
+                    ""id"": ""b34bea58-5a64-49f2-8c54-bdb7fe83fbb7"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -208,6 +217,17 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""action"": ""CheckMap"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""f435006a-4c8d-4f54-b763-1d646152c243"",
+                    ""path"": ""<Keyboard>/r"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""DooHickySwitch"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -225,6 +245,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         m_Crawl_Punch = m_Crawl.FindAction("Punch", throwIfNotFound: true);
         m_Crawl_Kick = m_Crawl.FindAction("Kick", throwIfNotFound: true);
         m_Crawl_CheckMap = m_Crawl.FindAction("CheckMap", throwIfNotFound: true);
+        m_Crawl_DooHickySwitch = m_Crawl.FindAction("DooHickySwitch", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -295,6 +316,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     private readonly InputAction m_Crawl_Punch;
     private readonly InputAction m_Crawl_Kick;
     private readonly InputAction m_Crawl_CheckMap;
+    private readonly InputAction m_Crawl_DooHickySwitch;
     public struct CrawlActions
     {
         private @PlayerControls m_Wrapper;
@@ -308,6 +330,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         public InputAction @Punch => m_Wrapper.m_Crawl_Punch;
         public InputAction @Kick => m_Wrapper.m_Crawl_Kick;
         public InputAction @CheckMap => m_Wrapper.m_Crawl_CheckMap;
+        public InputAction @DooHickySwitch => m_Wrapper.m_Crawl_DooHickySwitch;
         public InputActionMap Get() { return m_Wrapper.m_Crawl; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -344,6 +367,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @CheckMap.started += instance.OnCheckMap;
             @CheckMap.performed += instance.OnCheckMap;
             @CheckMap.canceled += instance.OnCheckMap;
+            @DooHickySwitch.started += instance.OnDooHickySwitch;
+            @DooHickySwitch.performed += instance.OnDooHickySwitch;
+            @DooHickySwitch.canceled += instance.OnDooHickySwitch;
         }
 
         private void UnregisterCallbacks(ICrawlActions instance)
@@ -375,6 +401,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @CheckMap.started -= instance.OnCheckMap;
             @CheckMap.performed -= instance.OnCheckMap;
             @CheckMap.canceled -= instance.OnCheckMap;
+            @DooHickySwitch.started -= instance.OnDooHickySwitch;
+            @DooHickySwitch.performed -= instance.OnDooHickySwitch;
+            @DooHickySwitch.canceled -= instance.OnDooHickySwitch;
         }
 
         public void RemoveCallbacks(ICrawlActions instance)
@@ -403,5 +432,6 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         void OnPunch(InputAction.CallbackContext context);
         void OnKick(InputAction.CallbackContext context);
         void OnCheckMap(InputAction.CallbackContext context);
+        void OnDooHickySwitch(InputAction.CallbackContext context);
     }
 }

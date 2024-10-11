@@ -140,7 +140,7 @@ public class PathGenDFS : MonoBehaviour
         //Static subscription
         LevelMessanger.LevelFinished += GenerateNewLevel;
 
-        CallNewLevel();
+        OnNewMapGenerated?.Invoke(this, EventArgs.Empty);
     }
 
     private void GenerateNewLevel(object sender, EventArgs e)
@@ -157,16 +157,12 @@ public class PathGenDFS : MonoBehaviour
         CreatelevelExit();
         CreateRandomHideSpots();
 
-        CallNewLevel();
+        OnNewMapGenerated?.Invoke(this, EventArgs.Empty);
     }
 
     private void OnDisable()
     {
         LevelMessanger.LevelFinished -= GenerateNewLevel;
-    }
-    private void CallNewLevel()
-    {
-        OnNewMapGenerated?.Invoke(this, EventArgs.Empty);
     }
 
     private void ResetMap()

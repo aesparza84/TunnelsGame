@@ -12,10 +12,9 @@ public class WeaponSpawner : MonoBehaviour
     private PathGenDFS _pathGen;
     private GridNode[,] Map;
 
-    private void Start()
+    private void Awake()
     {
         _pathGen = GetComponent<PathGenDFS>();
-
         LevelMessanger.MapReady += Updatemap;
     }
 
