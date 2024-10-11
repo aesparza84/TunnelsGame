@@ -98,6 +98,15 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""CheckMap"",
+                    ""type"": ""Button"",
+                    ""id"": ""f8879268-67fa-4419-b876-67857422b7ce"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -188,6 +197,17 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""action"": ""Kick"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""8b3af883-e49f-4823-959d-c247aa493758"",
+                    ""path"": ""<Keyboard>/w"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""CheckMap"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -204,6 +224,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         m_Crawl_CamBehindRight = m_Crawl.FindAction("CamBehindRight", throwIfNotFound: true);
         m_Crawl_Punch = m_Crawl.FindAction("Punch", throwIfNotFound: true);
         m_Crawl_Kick = m_Crawl.FindAction("Kick", throwIfNotFound: true);
+        m_Crawl_CheckMap = m_Crawl.FindAction("CheckMap", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -273,6 +294,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     private readonly InputAction m_Crawl_CamBehindRight;
     private readonly InputAction m_Crawl_Punch;
     private readonly InputAction m_Crawl_Kick;
+    private readonly InputAction m_Crawl_CheckMap;
     public struct CrawlActions
     {
         private @PlayerControls m_Wrapper;
@@ -285,6 +307,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         public InputAction @CamBehindRight => m_Wrapper.m_Crawl_CamBehindRight;
         public InputAction @Punch => m_Wrapper.m_Crawl_Punch;
         public InputAction @Kick => m_Wrapper.m_Crawl_Kick;
+        public InputAction @CheckMap => m_Wrapper.m_Crawl_CheckMap;
         public InputActionMap Get() { return m_Wrapper.m_Crawl; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -318,6 +341,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Kick.started += instance.OnKick;
             @Kick.performed += instance.OnKick;
             @Kick.canceled += instance.OnKick;
+            @CheckMap.started += instance.OnCheckMap;
+            @CheckMap.performed += instance.OnCheckMap;
+            @CheckMap.canceled += instance.OnCheckMap;
         }
 
         private void UnregisterCallbacks(ICrawlActions instance)
@@ -346,6 +372,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Kick.started -= instance.OnKick;
             @Kick.performed -= instance.OnKick;
             @Kick.canceled -= instance.OnKick;
+            @CheckMap.started -= instance.OnCheckMap;
+            @CheckMap.performed -= instance.OnCheckMap;
+            @CheckMap.canceled -= instance.OnCheckMap;
         }
 
         public void RemoveCallbacks(ICrawlActions instance)
@@ -373,5 +402,6 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         void OnCamBehindRight(InputAction.CallbackContext context);
         void OnPunch(InputAction.CallbackContext context);
         void OnKick(InputAction.CallbackContext context);
+        void OnCheckMap(InputAction.CallbackContext context);
     }
 }

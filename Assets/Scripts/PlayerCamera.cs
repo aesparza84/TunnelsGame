@@ -28,6 +28,9 @@ public class PlayerCamera : MonoBehaviour
     [SerializeField] private float RetaliateForce;
     private float RetalTimer;
 
+    [Header("DooHicky Reference")]
+    [SerializeField] private Transform DooHickyTransform;
+
     //Cinemachine Components
     private CinemachineBasicMultiChannelPerlin _cameraNoise;
     private CinemachineImpulseListener _impulseListener;
@@ -68,7 +71,9 @@ public class PlayerCamera : MonoBehaviour
         _playerController.OnLeft += OnLeftArm;
         _playerController.OnAttacked += OnPlayerAttacked;
         _playerController.OnReleased += OnPlayerReleased;
-        _playerController.OnRetaliate += OnPlayerRetaliate;
+        _playerController.OnVulRetaliate += OnPlayerRetaliate;
+        _playerController.OnMapCheck += OnMapOpen;
+        _playerController.OnMapClose += OnMapClosed;
 
 
         //Set initial lean side
@@ -81,6 +86,8 @@ public class PlayerCamera : MonoBehaviour
         CameraNoise_Normal();
 
     }
+
+    
 
     private void OnEnable()
     {
@@ -98,6 +105,15 @@ public class PlayerCamera : MonoBehaviour
         CameraTurnaround_Right.Enable();
         CameraTurnaround_Right.performed += OnCameraBackRight;
         CameraTurnaround_Right.canceled += OnCameraBackRight_Stopped;
+    }
+    private void OnMapClosed(object sender, System.EventArgs e)
+    {
+        _camera.LookAt = _cameraTransform;
+    }
+
+    private void OnMapOpen(object sender, System.EventArgs e)
+    {        
+        _camera.LookAt = DooHickyTransform;
     }
 
     #region Back Leaning controls
@@ -145,7 +161,7 @@ public class PlayerCamera : MonoBehaviour
         v.z = TargetForwardEuler.z;
         OverrideRotation = Quaternion.Euler(v);
     }
-    private void OnPlayerRetaliate(object sender, System.EventArgs e)
+    private void OnPlayerRetaliate(object sender, Side e)
     {
         //_impulseListener
         _impulseSource.GenerateImpulseWithForce(RetaliateForce);
@@ -287,6 +303,8 @@ public class PlayerCamera : MonoBehaviour
         _playerController.OnLeft -= OnLeftArm;
         _playerController.OnAttacked -= OnPlayerAttacked;
         _playerController.OnReleased -= OnPlayerReleased;
-        _playerController.OnRetaliate -= OnPlayerRetaliate;
+        _playerController.OnVulRetaliate -= OnPlayerRetaliate;
+        _playerController.OnMapCheck -= OnMapOpen;
+        _playerController.OnMapClose -= OnMapClosed;
     }
 }

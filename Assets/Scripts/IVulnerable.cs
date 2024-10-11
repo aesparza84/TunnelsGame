@@ -6,6 +6,7 @@ using UnityEngine;
 public interface IVulnerable 
 {
     public event EventHandler OnVulRelease;
+    public event EventHandler<Side> OnVulRetaliate;
     public void Attack(Vector3 p, int time);
     public void Release();
     public void Retaliate(bool inFront, ref Weapon w);

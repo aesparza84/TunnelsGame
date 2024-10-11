@@ -14,6 +14,5 @@ public class MapCameraFollow : MonoBehaviour
         UpdatePos = PlayerObj.transform.position;
         UpdatePos.y = transform.position.y;
         transform.position = UpdatePos;
-        transform.right = PlayerObj.transform.right;
     }
 }

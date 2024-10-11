@@ -45,6 +45,12 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
     //Active state of enemy behavior entirly
     private ActiveState _activeState;
 
+    //Anim events
+    public event EventHandler OnIdle;
+    public event EventHandler OnRoam;
+    public event EventHandler OnAttack;
+    public event EventHandler<Side> OnATKInterupted;
+
     private void Awake()
     {
         LevelMessanger.LevelFinished += OnLevelFinished;
@@ -191,24 +197,29 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
         {
             case EnemyState.LURKING:
                 _pathFinder.SetSpeed(LurkSpeed);
-                
+                OnRoam?.Invoke(this, EventArgs.Empty);
+
                 break;
             case EnemyState.HUNTING:
                 _pathFinder.SetSpeed(HuntSpeed);
-                
+                OnRoam?.Invoke(this, EventArgs.Empty);
+
                 break;
             case EnemyState.ATTACKING:
                 _pathFinder.StopTraverse();
+                OnAttack?.Invoke(this, EventArgs.Empty);
 
                 break;
 
             case EnemyState.RETREATING:
                 _pathFinder.SetSpeed(HuntSpeed);
+                OnRoam?.Invoke(this, EventArgs.Empty);
 
 
                 break;
             case EnemyState.LINGERING:
                 currentLingerTime = 0.0f;
+                OnIdle?.Invoke(this, EventArgs.Empty);
 
                 break;
             default:
@@ -244,6 +255,7 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
                         Debug.Log("Attacking player");
                         EnterState(EnemyState.ATTACKING);
                         vul.OnVulRelease += OnRelease;
+                        vul.OnVulRetaliate += OnHit;
                         vul.Attack(transform.position, EncounterTime);
 
                         currentAttackTime = 0;
@@ -254,7 +266,9 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
             }
         }
     }
+
     
+
     private void SetLookRotation(Vector3 e)
     {
         Vector3 dir = (e - transform.position).normalized;
@@ -262,12 +276,16 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
         AttackLookDirection = Quaternion.LookRotation(dir, Vector3.up);
     }
 
-    
+    private void OnHit(object sender, Side e)
+    {
+        OnATKInterupted?.Invoke(this, e);
+    }
     private void OnRelease(object sender, System.EventArgs e)
     {
         if (sender is IVulnerable vul)
         {
             vul.OnVulRelease -= OnRelease;
+            vul.OnVulRetaliate -= OnHit;
         }
 
         Debug.Log("Released player");

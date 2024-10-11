@@ -22,6 +22,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
     private InputAction TurnRight;
     private InputAction Punch;
     private InputAction Kick;
+    private InputAction CheckMap;
 
     private Side currentArm;
     public Side CurrentArm { get { return currentArm; } }
@@ -66,7 +67,9 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
     public event EventHandler<Vector3> OnAttacked;
     public event EventHandler OnReleased;
     public event EventHandler OnVulRelease;
-    public event EventHandler OnRetaliate;
+    public event EventHandler<Side> OnVulRetaliate;
+    public event EventHandler OnMapCheck;
+    public event EventHandler OnMapClose;
     private int currentEncounterTime;
 
     //Ear Collider Array
@@ -76,6 +79,10 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
     //Move event
     public event EventHandler<Tuple<OpeningSide, Side>> OnMove; //Facing-Dir, Arm side
     [SerializeField] private bool MapMove;
+
+    //Map using bool
+    private bool CheckingMap;
+    private bool CanMap {  get { return !Attacked && !Moving && !Turning; } }
 
     //Visible Status
     private bool Visible;
@@ -165,7 +172,13 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
         Kick = _mappedInputs.Crawl.Kick;
         Kick.Disable();
         Kick.started += OnKick;
-    }   
+
+        CheckMap = _mappedInputs.Crawl.CheckMap;
+        CheckMap.Enable();
+        CheckMap.started += OnMapOpen;
+    }
+
+    
 
     private void DisableAllControls()
     {
@@ -173,6 +186,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
         RightArm.Disable();
         TurnLeft.Disable();
         RightArm.Disable();
+        CheckMap.Disable();
     }
     private void EnableAllControls()
     {
@@ -180,8 +194,13 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
         RightArm.Enable();
         TurnLeft.Enable();
         RightArm.Enable();
+        CheckMap.Enable();
     }
-
+    private void OnMapOpen(InputAction.CallbackContext obj)
+    {
+        if (CanMap)
+            OnMapCheck?.Invoke(this, EventArgs.Empty);
+    }
     private void OnRightCrawl(InputAction.CallbackContext obj)
     {
         if (!InputsChilled())
@@ -528,6 +547,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
         TurnRight.started -= OnTurnRight;
         Kick.started -= OnKick;
         Punch.started -= OnPunch;
+        CheckMap.started -= OnMapOpen;
 
         LevelMessanger.LevelFinished -= EndLevel;
         LevelMessanger.LevelStart -= LevelReady;
@@ -558,6 +578,21 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
 
     }
 
+    private void OpenMap()
+    {
+        if (CanMap)
+        {
+            OnMapCheck?.Invoke(this, EventArgs.Empty);
+            CheckingMap = true;
+        }
+    }
+    private void ClosekMap()
+    {
+        if (CheckingMap)
+        {
+            OnMapClose?.Invoke(this, EventArgs.Empty);
+        }
+    }
     public void Hide()
     {
         Visible = false;
@@ -634,7 +669,17 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
             //Reduce time 
             w.UseWeapon();
             currentEncounterTime += w.Stagger;
-            OnRetaliate?.Invoke(this, EventArgs.Empty);
+
+            //Get direction rat is at
+            Side s = Side.LEFT;
+
+
+            if (!AttackingFromFront)
+            {
+                s = Side.LEFT;
+            }
+
+            OnVulRetaliate?.Invoke(this, s);
             currentAttackCooldown = 0.0f;
         }
     }
