@@ -221,13 +221,11 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
     {
         if (CanMap)
         {
-            OnMapCheck?.Invoke(this, EventArgs.Empty);
             OpenMap();
         }
     }
     private void OnCloseMap(InputAction.CallbackContext obj)
     {
-        OnMapClose?.Invoke(this, EventArgs.Empty);
         CloseMap();
     }
     private void OnRightCrawl(InputAction.CallbackContext obj)
@@ -657,6 +655,9 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
 
     public void Attack(Vector3 p, int encounterSeconds)
     {
+        CloseMap();
+        OnAttacked?.Invoke(this, p);
+
         Vector3 dir = (p - transform.position).normalized;
         float dot = Vector3.Dot(transform.forward, dir);
         currentAttackCooldown = AttackCoolDown; //Reset attack timer
@@ -672,7 +673,6 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
         Punch.Enable();
         Kick.Enable();
 
-        OnAttacked?.Invoke(this, p);
         DisableAllControls();
         Attacked = true;
 

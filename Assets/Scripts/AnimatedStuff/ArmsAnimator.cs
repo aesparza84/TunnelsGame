@@ -46,6 +46,8 @@ public class ArmsAnimator : MonoBehaviour
 
         L_ArmRig.weight = 1;
         R_ArmRig.weight = 1;
+
+        BackToCrawl();
     }
 
     private void OnAtk(object sender, Vector3 e)
@@ -93,11 +95,11 @@ public class ArmsAnimator : MonoBehaviour
         switch (_playerController.CurrentArm)
         {
             case Side.LEFT:
-                _armAnimator.CrossFade(Hash_Left, _crossFade);
+                _armAnimator.CrossFade(Hash_Left, 0.5f);
 
                 break;
             case Side.RIGHT:
-                _armAnimator.CrossFade(Hash_Right, _crossFade);
+                _armAnimator.CrossFade(Hash_Right, 0.5f);
 
                 break;
             case Side.NONE:
