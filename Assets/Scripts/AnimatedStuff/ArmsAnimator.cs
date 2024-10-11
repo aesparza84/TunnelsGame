@@ -1,70 +1,83 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Animations.Rigging;
 
 public class ArmsAnimator : MonoBehaviour
 {
     [Header("Player Controller Reference")]
     [SerializeField] private PlayerController _playerController;
 
-    [Header("Limbs")]
+    [Header("Animator")]
     [SerializeReference] private Animator _armAnimator;
 
+    [Header("Limb Rigs")]
+    [SerializeField] private Rig L_ArmRig;
+    [SerializeField] private Rig R_ArmRig;
+
     [Header("Anim Names")]
+    [SerializeField] private string Idle;
     [SerializeField] private string Left;
     [SerializeField] private string Right;
     [SerializeField] private string Map;
 
+    [SerializeField] private float _crossFade;
+
+    private int Hash_Idle;
     private int Hash_Left;
     private int Hash_Right;
     private int Hash_Map;
 
-    private Side prevSide;
+    private bool Mapping;
     private void Start()
     {
+        Hash_Idle = Animator.StringToHash(Idle);
         Hash_Left = Animator.StringToHash(Left);
         Hash_Right = Animator.StringToHash(Right);
         Hash_Map = Animator.StringToHash(Map);
 
-        _playerController.OnMove += OnMove;
+        _playerController.OnPlayerMoved += OnMove;
         _playerController.OnMapCheck += OnMapOpen;
-        _playerController.OnMapClose += OnMapClosed;
+        _playerController.OnMapClose += OnReturnToCrawlArm;
+        _playerController.OnAttacked += OnAtk;
+        _playerController.OnReleased += OnReturnToCrawlArm;
+
+        //BackToCrawl();
+
+        L_ArmRig.weight = 1;
+        R_ArmRig.weight = 1;
     }
 
-    private void OnMapClosed(object sender, System.EventArgs e)
+    private void OnAtk(object sender, Vector3 e)
+    {        
+        _armAnimator.CrossFade(Hash_Idle, 0.5f);
+    }
+
+    private void OnReturnToCrawlArm(object sender, System.EventArgs e)
     {
-        switch (prevSide)
-        {
-            case Side.LEFT:
-                _armAnimator.Play(Hash_Left);
-
-                break;
-            case Side.RIGHT:
-                _armAnimator.Play(Hash_Right);
-
-                break;
-            case Side.NONE:
-                break;
-            default:
-                break;
-        }
+        Mapping = false;
+        BackToCrawl();
     }
 
     private void OnMapOpen(object sender, System.EventArgs e)
     {
-        _armAnimator.Play(Hash_Map);
+        Mapping = true;
+        _armAnimator.CrossFade(Hash_Map, _crossFade);
     }
 
-    private void OnMove(object sender, System.Tuple<OpeningSide, Side> e)
+    private void OnMove(object sender, Side e)
     {
-        switch (e.Item2)
+        if (Mapping)
+            return;
+
+        switch (e)
         {
             case Side.LEFT:
-                _armAnimator.Play(Hash_Left);
+                _armAnimator.CrossFade(Hash_Left, _crossFade);
 
                 break;
             case Side.RIGHT:
-                _armAnimator.Play(Hash_Right);
+                _armAnimator.CrossFade(Hash_Right, _crossFade);
 
                 break;
             case Side.NONE:
@@ -73,13 +86,31 @@ public class ArmsAnimator : MonoBehaviour
                 break;
         }
 
-        prevSide = e.Item2;
+    }
+
+    private void BackToCrawl()
+    {
+        switch (_playerController.CurrentArm)
+        {
+            case Side.LEFT:
+                _armAnimator.CrossFade(Hash_Left, _crossFade);
+
+                break;
+            case Side.RIGHT:
+                _armAnimator.CrossFade(Hash_Right, _crossFade);
+
+                break;
+            case Side.NONE:
+                break;
+            default:
+                break;
+        }
     }
 
     private void OnDisable()
     {
-        _playerController.OnMove -= OnMove;
+        _playerController.OnPlayerMoved -= OnMove;
         _playerController.OnMapCheck -= OnMapOpen;
-        _playerController.OnMapClose -= OnMapClosed;
+        _playerController.OnMapClose -= OnReturnToCrawlArm;
     }
 }

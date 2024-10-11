@@ -9,6 +9,7 @@ public class AdjustRoom : MonoBehaviour
     [Header("Roof")]
     [SerializeField] private GameObject Roof;
     [SerializeField] private Light _exitLight;
+    [SerializeField] private GameObject ExitIcon;
 
     [Header("Walls")]
     [SerializeField] private GameObject N_Wall;
@@ -204,6 +205,8 @@ public class AdjustRoom : MonoBehaviour
         {
             Roof.SetActive(true);
         }
+
+        ExitIcon.SetActive(true);
 
         _exitLight.enabled = true;
 

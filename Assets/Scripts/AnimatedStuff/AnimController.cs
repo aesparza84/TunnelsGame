@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Animations.Rigging;
 
 public class AnimController : MonoBehaviour
 {
@@ -16,6 +17,10 @@ public class AnimController : MonoBehaviour
     [SerializeField] private string ATKName;
     [SerializeField] private string InterruptLeftName;
     [SerializeField] private string InterruptRightName;
+
+    [Header("IK_Point")]
+    [SerializeField] private Transform IK_GrabPoint;
+    private Transform CurrentLimbTransform;
 
     //Hashed References
     private int Hash_Idlename;
@@ -48,12 +53,20 @@ public class AnimController : MonoBehaviour
 
     private void Roam(object sender, System.EventArgs e)
     {
+        ReleaseLimb();
         _animator.Play(Hash_RoamName);
     }
 
     private void ATK(object sender, System.EventArgs e)
     {
         _animator.Play(Hash_ATKName);
+
+        Collider[] c = Physics.OverlapSphere(transform.position, 3, (1 << 10));
+
+        if (c.Length > 0)
+        {
+            GrabLimb(c[0].transform);
+        }
     }
 
     private void ATK_Interrupted(object sender, Side e)
@@ -75,6 +88,23 @@ public class AnimController : MonoBehaviour
         }
     }
 
+    private void Update()
+    {
+        if (CurrentLimbTransform != null)
+        {
+            CurrentLimbTransform.position = IK_GrabPoint.position;
+        }
+    }
+
+    private void GrabLimb(Transform IK_Target)
+    {
+        CurrentLimbTransform = IK_Target;
+    }
+    
+    private void ReleaseLimb()
+    {
+        CurrentLimbTransform = null;
+    }
     private void OnDisable()
     {
         _enemyBehavior.OnATKInterupted += ATK_Interrupted;

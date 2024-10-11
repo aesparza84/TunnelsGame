@@ -30,8 +30,10 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
     //Readonly player direction
     public OpeningSide FacingDirection { get; private set; }
 
-    //Player movement
-    [SerializeField] private float MoveSpeed;
+    [Header("Movement Fields")]
+    [SerializeField] private float RegularMoveSpeed;
+    [SerializeField] private float MapMoveSpeed;
+    private float CurrentMoveSpeed;
     private Vector3 TargetPos;
 
     //Camera info, distance percent
@@ -70,6 +72,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
     public event EventHandler<Side> OnVulRetaliate;
     public event EventHandler OnMapCheck;
     public event EventHandler OnMapClose;
+    public event EventHandler<Side> OnPlayerMoved;
     private int currentEncounterTime;
 
     //Ear Collider Array
@@ -89,7 +92,9 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
 
     private bool Turning;
     private bool Moving;
-    private const float InputCoolDown = 0.25f;
+    private const float RegInputCoolDown = 0.25f;
+    private const float MapInputCoolDown = 0.7f;
+    private float SetInputCoolDown;
     private float currentCoolDown;
 
     //Active state of Player Controller
@@ -107,7 +112,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
 
         CompassDirection(Vector3.Dot(transform.forward, Vector3.forward));
 
-        currentCoolDown = InputCoolDown;
+        currentCoolDown = SetInputCoolDown;
 
         LevelMessanger.LevelFinished += EndLevel;
         LevelMessanger.LevelStart += LevelReady;
@@ -134,9 +139,10 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
         TargetRotation = transform.localRotation.eulerAngles;
 
         CompassDirection(Vector3.Dot(transform.forward, Vector3.forward));
-        currentCoolDown = InputCoolDown;
+        currentCoolDown = SetInputCoolDown;
         EnableAllControls();
         _activeState = ActiveState.ACTIVE;
+        CurrentMoveSpeed = RegularMoveSpeed;
     }
 
     public void DisableComponent()
@@ -176,6 +182,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
         CheckMap = _mappedInputs.Crawl.CheckMap;
         CheckMap.Enable();
         CheckMap.started += OnMapOpen;
+        CheckMap.canceled += OnCloseMap;
     }
 
     
@@ -199,7 +206,15 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
     private void OnMapOpen(InputAction.CallbackContext obj)
     {
         if (CanMap)
+        {
             OnMapCheck?.Invoke(this, EventArgs.Empty);
+            OpenMap();
+        }
+    }
+    private void OnCloseMap(InputAction.CallbackContext obj)
+    {
+        OnMapClose?.Invoke(this, EventArgs.Empty);
+        CloseMap();
     }
     private void OnRightCrawl(InputAction.CallbackContext obj)
     {
@@ -300,6 +315,8 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
                     Moving = true;
                     CurrentMapPoint = newPoint;
                     MakeNoise(CrawlSoundRadius);
+                    OnPlayerMoved?.Invoke(this, currentArm);
+
                     return true;
                 }
 
@@ -313,6 +330,8 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
                     Moving = true;
                     CurrentMapPoint = newPoint;
                     MakeNoise(CrawlSoundRadius);
+                    OnPlayerMoved?.Invoke(this, currentArm);
+
                     return true;
                 }
 
@@ -348,6 +367,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
 
                     Moving = true;
                     MakeNoise(CrawlSoundRadius);
+
                     return true;
                 }
 
@@ -360,6 +380,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
 
                     Moving = true;
                     MakeNoise(CrawlSoundRadius);
+
                     return true;
                 }
 
@@ -418,7 +439,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
         }
         else
         {
-            if (currentCoolDown < InputCoolDown)
+            if (currentCoolDown < SetInputCoolDown)
             {
                 currentCoolDown += Time.deltaTime;
             }
@@ -510,7 +531,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
         {
             if (transform.position != TargetPos)
             {
-                transform.position = Vector3.MoveTowards(transform.position, TargetPos, MoveSpeed * Time.deltaTime);
+                transform.position = Vector3.MoveTowards(transform.position, TargetPos, CurrentMoveSpeed * Time.deltaTime);
             }
             else
             {
@@ -523,7 +544,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
     //To prevent move spam
     private bool InputsChilled()
     {
-        return currentCoolDown >= InputCoolDown;
+        return currentCoolDown >= SetInputCoolDown;
     }
 
     //For External classes
@@ -583,14 +604,19 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
         if (CanMap)
         {
             OnMapCheck?.Invoke(this, EventArgs.Empty);
+            CurrentMoveSpeed = MapMoveSpeed;
+            SetInputCoolDown = MapInputCoolDown;
             CheckingMap = true;
         }
     }
-    private void ClosekMap()
+    private void CloseMap()
     {
         if (CheckingMap)
         {
             OnMapClose?.Invoke(this, EventArgs.Empty);
+            CurrentMoveSpeed = RegularMoveSpeed;
+            SetInputCoolDown = RegInputCoolDown;
+            CheckingMap = false;
         }
     }
     public void Hide()

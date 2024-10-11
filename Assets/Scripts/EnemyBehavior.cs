@@ -27,6 +27,10 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
     [SerializeField] private float AttackCooldown;
     private float currentAttackTime;
 
+    [Header("Hear Cooldown")]
+    [SerializeField] private float HearCooldown;
+    private float currentHearTime;
+
     [Header("Encounter Time")]
     [SerializeField] private int EncounterTime;
 
@@ -87,6 +91,7 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
         _pathFinder.ActivateComponent();
         _activeState = ActiveState.ACTIVE;
         currentAttackTime = AttackCooldown;
+        currentHearTime = HearCooldown;
         EnterState(EnemyState.LURKING);
     }
     public void DisableComponent()
@@ -96,12 +101,21 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
     }
     private void ReachedDestination(object sender, System.EventArgs e)
     {
-        EnterState(EnemyState.LINGERING);
+        if (_enemyState != EnemyState.ATTACKING)
+        {
+            EnterState(EnemyState.LINGERING);
+        }
     }
 
     private void Update()
     {
         HandleStates();
+
+        //Reset hear time
+        if (currentHearTime < HearCooldown)
+        {
+            currentHearTime += Time.deltaTime;
+        }
     }
 
     private void HandleStates()
@@ -167,7 +181,7 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
 
     public void Hear(Point heardPoint)
     {
-        if (_enemyState == EnemyState.RETREATING)
+        if (_enemyState == EnemyState.RETREATING || (currentHearTime < HearCooldown))
         {
             return;
         }
@@ -175,6 +189,8 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
         //Debug.Log("heard you!!");
         if (_activeState == ActiveState.ACTIVE)
         {
+            currentHearTime = 0.0f;
+
             if (_enemyState != EnemyState.HUNTING)
             {
                 EnterState(EnemyState.HUNTING);

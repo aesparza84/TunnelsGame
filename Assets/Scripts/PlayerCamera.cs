@@ -11,6 +11,12 @@ public class PlayerCamera : MonoBehaviour
     [SerializeField] private CinemachineCamera _camera;
     [SerializeField] private Transform _cameraTransform;
 
+    [Header("FOV Settings")]
+    [SerializeField] private float DefaultFOV;
+    [SerializeField] private float AttackedFOV;
+    [SerializeField] private float FOV_ChangeSpeed;
+    private float FOV_Target;
+
     [Header("Camera Lean Angles")]
     [SerializeField] private float LeftAngle;
     [SerializeField] private float RightAngle;
@@ -47,6 +53,7 @@ public class PlayerCamera : MonoBehaviour
     private bool Lean;
     private bool BackLean;
     private bool OverrideLook;
+    private bool ChangingFOV;
     private Side PrevArm;
 
     //Controller reference
@@ -75,7 +82,6 @@ public class PlayerCamera : MonoBehaviour
         _playerController.OnMapCheck += OnMapOpen;
         _playerController.OnMapClose += OnMapClosed;
 
-
         //Set initial lean side
         LeanCamera(Side.RIGHT);
 
@@ -85,6 +91,7 @@ public class PlayerCamera : MonoBehaviour
         Forward_Z = _cameraTransform.localPosition.z;
         CameraNoise_Normal();
 
+        SetFOV_Target(DefaultFOV);
     }
 
     
@@ -108,12 +115,12 @@ public class PlayerCamera : MonoBehaviour
     }
     private void OnMapClosed(object sender, System.EventArgs e)
     {
-        _camera.LookAt = _cameraTransform;
+        _camera.Follow = _cameraTransform;
     }
 
     private void OnMapOpen(object sender, System.EventArgs e)
-    {        
-        _camera.LookAt = DooHickyTransform;
+    {
+        _camera.Follow = DooHickyTransform;
     }
 
     #region Back Leaning controls
@@ -141,6 +148,7 @@ public class PlayerCamera : MonoBehaviour
     #region Attack Events
     private void OnPlayerReleased(object sender, System.EventArgs e)
     {
+        SetFOV_Target(DefaultFOV);
         CameraNoise_Normal();
 
         OverrideLook = false;
@@ -151,6 +159,8 @@ public class PlayerCamera : MonoBehaviour
     {
         OverrideLook = true;
 
+        SetFOV_Target(AttackedFOV);
+
         CameraNoise_Attack();
 
         Vector3 dir = (e - _cameraTransform.position).normalized;
@@ -158,6 +168,7 @@ public class PlayerCamera : MonoBehaviour
 
         OverrideRotation = Quaternion.LookRotation(dir, Vector3.up);
         Vector3 v = OverrideRotation.eulerAngles;
+        v.x = 0;
         v.z = TargetForwardEuler.z;
         OverrideRotation = Quaternion.Euler(v);
     }
@@ -240,8 +251,26 @@ public class PlayerCamera : MonoBehaviour
         {
             HandleLeaning();
         }
+
+        if (ChangingFOV)
+        {
+            LerpFOV(FOV_Target);
+        }
+    }
+    private void LerpFOV(float fov)
+    {
+        _camera.Lens.FieldOfView = Mathf.Lerp(_camera.Lens.FieldOfView, fov, FOV_ChangeSpeed * Time.deltaTime);
+        if (_camera.Lens.FieldOfView == fov)
+        {
+            ChangingFOV = false;
+        }
     }
 
+    private void SetFOV_Target(float newFOV)
+    {
+        FOV_Target = newFOV;
+        ChangingFOV = true;
+    }
     private void HandleLeaning()
     {        
         if (BackLean)
