@@ -56,7 +56,6 @@ public class MapManeuver : MonoBehaviour
 
         //_pathGenerator.OnNewMapGenerated += UpdateMap;
 
-        LevelMessanger.LevelFinished += OnLevelFinished;
         LevelMessanger.MapReady += OnMapReady;
     }
 
@@ -72,12 +71,6 @@ public class MapManeuver : MonoBehaviour
         }
 
     }
-
-    private void OnLevelFinished(object sender, EventArgs e)
-    {
-        
-    }
-    
     private void OnEnable()
     {
         if (_player != null)
@@ -161,7 +154,6 @@ public class MapManeuver : MonoBehaviour
     private void OnDisable()
     {
         _player.OnMove -= OnmoveRequest;
-        LevelMessanger.LevelFinished -= OnLevelFinished;
         LevelMessanger.MapReady -= OnMapReady;
     }
 

@@ -120,7 +120,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
 
         currentCoolDown = SetInputCoolDown;
 
-        LevelMessanger.LevelFinished += EndLevel;
+        LevelMessanger.LevelExitCompleted += EndLevel;
         LevelMessanger.LevelStart += LevelReady;
 
         //Start Disabled
@@ -583,7 +583,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
         CheckMap.started -= OnMapOpen;
         DooHickyMode.started -= OnDooHickySwitch;
 
-        LevelMessanger.LevelFinished -= EndLevel;
+        LevelMessanger.LevelExitCompleted -= EndLevel;
         LevelMessanger.LevelStart -= LevelReady;
     }
 

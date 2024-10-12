@@ -138,7 +138,7 @@ public class PathGenDFS : MonoBehaviour
     private void Start()
     {
         //Static subscription
-        LevelMessanger.LevelFinished += GenerateNewLevel;
+        LevelMessanger.LevelExitCompleted += GenerateNewLevel;
 
         OnNewMapGenerated?.Invoke(this, EventArgs.Empty);
     }
@@ -162,7 +162,7 @@ public class PathGenDFS : MonoBehaviour
 
     private void OnDisable()
     {
-        LevelMessanger.LevelFinished -= GenerateNewLevel;
+        LevelMessanger.LevelExitCompleted -= GenerateNewLevel;
     }
 
     private void ResetMap()

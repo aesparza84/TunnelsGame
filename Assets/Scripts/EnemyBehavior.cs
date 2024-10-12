@@ -57,7 +57,7 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
 
     private void Awake()
     {
-        LevelMessanger.LevelFinished += OnLevelFinished;
+        LevelMessanger.LevelExitCompleted += OnLevelFinished;
         LevelMessanger.LevelStart += OnLevelStart;
 
     }
@@ -109,6 +109,11 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
 
     private void Update()
     {
+        if (_activeState != ActiveState.ACTIVE)
+        {
+            return;
+        }
+
         HandleStates();
 
         //Reset hear time
@@ -314,7 +319,7 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
     private void OnDisable()
     {
         _pathFinder.OnReachedPoint -= ReachedDestination;
-        LevelMessanger.LevelFinished -= OnLevelFinished;
+        LevelMessanger.LevelExitCompleted -= OnLevelFinished;
         LevelMessanger.LevelStart -= OnLevelStart;
     }
 }

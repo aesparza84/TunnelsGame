@@ -231,7 +231,10 @@ public class AdjustRoom : MonoBehaviour
         {
             if (other.TryGetComponent<IHideable>(out IHideable h))
             {
-                h.Hide();
+                if (h.IsVisible())
+                {
+                    h.Hide();
+                }
             }
         }
 
@@ -243,6 +246,20 @@ public class AdjustRoom : MonoBehaviour
         }
     }
 
+    private void OnTriggerStay(Collider other)
+    {
+        //Hide 'hideable' if this is marked 'Hide Room'
+        if (HideRoom)
+        {
+            if (other.TryGetComponent<IHideable>(out IHideable h))
+            {
+                if (h.IsVisible())
+                {
+                    h.Hide();
+                }
+            }
+        }
+    }
     private void OnTriggerExit(Collider other)
     {
         // Reveal 'hideable' if this is marked 'Hide Room'
