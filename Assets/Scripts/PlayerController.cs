@@ -37,6 +37,9 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
     private float CurrentMoveSpeed;
     private Vector3 TargetPos;
 
+    [Header("Flashlight")]
+    [SerializeField] private Light _flashLight;
+
     //Camera info, distance percent
     [SerializeField] private Transform _camTransform;
 
@@ -78,6 +81,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
 
     //Misc. events
     public event EventHandler OnHickySwitch;
+    public static event EventHandler OnRetalHit;
 
     //Ear Collider Array
     private Collider[] EarColliders;
@@ -619,6 +623,8 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
             OnMapCheck?.Invoke(this, EventArgs.Empty);
             CurrentMoveSpeed = MapMoveSpeed;
             SetInputCoolDown = MapInputCoolDown;
+            _flashLight.enabled = false;
+
             CheckingMap = true;
         }
     }
@@ -629,6 +635,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
             OnMapClose?.Invoke(this, EventArgs.Empty);
             CurrentMoveSpeed = RegularMoveSpeed;
             SetInputCoolDown = RegInputCoolDown;
+            _flashLight.enabled = true;
             CheckingMap = false;
         }
     }
@@ -720,6 +727,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
                 s = Side.LEFT;
             }
 
+            OnRetalHit?.Invoke(this, EventArgs.Empty); //Camera Event
             OnVulRetaliate?.Invoke(this, s);
             currentAttackCooldown = 0.0f;
         }

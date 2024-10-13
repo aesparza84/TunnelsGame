@@ -52,6 +52,7 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
     //Anim events
     public event EventHandler OnIdle;
     public event EventHandler OnRoam;
+    public event EventHandler OnRoamFromAttack;
     public event EventHandler OnAttack;
     public event EventHandler<Side> OnATKInterupted;
 
@@ -234,7 +235,7 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
 
             case EnemyState.RETREATING:
                 _pathFinder.SetSpeed(HuntSpeed);
-                OnRoam?.Invoke(this, EventArgs.Empty);
+                OnRoamFromAttack?.Invoke(this, EventArgs.Empty);
 
 
                 break;
@@ -287,8 +288,6 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
             }
         }
     }
-
-    
 
     private void SetLookRotation(Vector3 e)
     {

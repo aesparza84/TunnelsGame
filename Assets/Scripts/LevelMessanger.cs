@@ -12,8 +12,7 @@ public class LevelMessanger : MonoBehaviour
     //Static events to send out
     public static event EventHandler LevelStart;
     public static event EventHandler MapReady;
-    public static event EventHandler PlayerReset
-        ;
+    public static event EventHandler PlayerReset;
     //Siginify that player reached end: Camera down, fade to black, Invoke next level event...
     public static event EventHandler LevelFinished; 
     

@@ -41,6 +41,7 @@ public class ArmsAnimator : MonoBehaviour
         _playerController.OnMapClose += OnReturnToCrawlArm;
         _playerController.OnAttacked += OnAtk;
         _playerController.OnReleased += OnReturnToCrawlArm;
+        LevelMessanger.PlayerReset += PosReset;
 
         //BackToCrawl();
 
@@ -48,6 +49,11 @@ public class ArmsAnimator : MonoBehaviour
         R_ArmRig.weight = 1;
 
         BackToCrawl();
+    }
+
+    private void PosReset(object sender, System.EventArgs e)
+    {
+        _armAnimator.Play(Hash_Left);
     }
 
     private void OnAtk(object sender, Vector3 e)
@@ -114,5 +120,8 @@ public class ArmsAnimator : MonoBehaviour
         _playerController.OnPlayerMoved -= OnMove;
         _playerController.OnMapCheck -= OnMapOpen;
         _playerController.OnMapClose -= OnReturnToCrawlArm;
+        _playerController.OnAttacked -= OnAtk;
+        _playerController.OnReleased -= OnReturnToCrawlArm;
+        LevelMessanger.PlayerReset -= PosReset;
     }
 }

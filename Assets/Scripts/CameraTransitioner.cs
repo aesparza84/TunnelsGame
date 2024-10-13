@@ -12,9 +12,15 @@ public class CameraTransitioner : MonoBehaviour
     [SerializeField] private CinemachineCamera PlayerUpperCam;
     private CinemachineCamera _currentCamera;
 
-    //Cinemachine Impulse Component
-    private CinemachineImpulseSource _cineImpulse;
+    [Header("Entrance Force")]
+    [SerializeField] private float EntranceImpulseForce = 0.2f;
 
+    //Cinemachine Impulse Component
+    //private CinemachineImpulseSource _cineImpulse;
+
+    //For Screen Fader
+    public static event EventHandler OnEntranceStarted;
+    
     public event EventHandler OnEntranceTransitionFinished;
     public event EventHandler OnExitTransitionFinished;
 
@@ -30,18 +36,17 @@ public class CameraTransitioner : MonoBehaviour
 
     private void OnEntrance(object sender, System.EventArgs e)
     {
-        StartCoroutine(Entrance(PlayerUpperCam, PlayerMainCam));
+        StartCoroutine(Entrance(PlayerUpperCam, PlayerLowerCam));
     }
 
     private void OnExit(object sender, System.EventArgs e)
     {
         StartCoroutine(Exit());
-
     }
 
     private void Start()
     {
-        _cineImpulse = GetComponent<CinemachineImpulseSource>();
+        //_cineImpulse = GetComponent<CinemachineImpulseSource>();
 
         SwitchToCamera(PlayerMainCam);
     }
@@ -59,16 +64,23 @@ public class CameraTransitioner : MonoBehaviour
     private IEnumerator Entrance(CinemachineCamera from, CinemachineCamera to)
     {
         SwitchToCamera(from);
-        yield return new WaitForSeconds(1);
-        _cineImpulse.GenerateImpulse(1);
+        OnEntranceStarted?.Invoke(this, EventArgs.Empty); //Static
+
+        yield return new WaitForSeconds(0.8f);
+
         SwitchToCamera(to);
+
+        yield return new WaitForSeconds(1);
+
+        SwitchToCamera(PlayerMainCam);
+
         OnEntranceTransitionFinished?.Invoke(this, EventArgs.Empty);
         yield return null;
     }
     private IEnumerator Exit()
     {
         SwitchToCamera(PlayerLowerCam);
-        yield return new WaitForSeconds(2);
+        yield return new WaitForSeconds(1);
         OnExitTransitionFinished?.Invoke(this, EventArgs.Empty);
         yield return null;
     }

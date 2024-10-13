@@ -8,6 +8,9 @@ public class AdjustRoom : MonoBehaviour
 {
     [Header("Roof")]
     [SerializeField] private GameObject Roof;
+    [SerializeField] private GameObject Floor;
+    [SerializeField] private GameObject ShaftDown;
+    [SerializeField] private GameObject ShaftUp;
     [SerializeField] private Light _exitLight;
     [SerializeField] private GameObject ExitIcon;
 
@@ -192,6 +195,9 @@ public class AdjustRoom : MonoBehaviour
             default:
                 break;
         }
+
+        Roof.SetActive(false);
+        ShaftUp.SetActive(true);
     }
 
     public void SetMazeExit()
@@ -201,11 +207,8 @@ public class AdjustRoom : MonoBehaviour
         if (RoomTrigger != null)
             RoomTrigger.enabled = true;
 
-        if (!Roof.activeInHierarchy)
-        {
-            Roof.SetActive(true);
-        }
-
+        Floor.SetActive(false);
+        ShaftDown.SetActive(true);
         ExitIcon.SetActive(true);
 
         _exitLight.enabled = true;

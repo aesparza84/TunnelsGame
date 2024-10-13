@@ -40,7 +40,7 @@ public class PlayerCamera : MonoBehaviour
     //Cinemachine Components
     private CinemachineBasicMultiChannelPerlin _cameraNoise;
     private CinemachineImpulseListener _impulseListener;
-    private CinemachineImpulseSource _impulseSource;
+    //private CinemachineImpulseSource _impulseSource;
 
     //Camera rotations
     private Vector3 TargetForwardEuler;
@@ -72,7 +72,7 @@ public class PlayerCamera : MonoBehaviour
 
         _cameraNoise = _camera.GetComponentInChildren<CinemachineBasicMultiChannelPerlin>();
         _impulseListener = _camera.GetComponentInChildren<CinemachineImpulseListener>();
-        _impulseSource = transform.GetComponentInChildren<CinemachineImpulseSource>();
+        //_impulseSource = transform.GetComponentInChildren<CinemachineImpulseSource>();
 
         _playerController.OnRight += OnRightArm;
         _playerController.OnLeft += OnLeftArm;
@@ -175,7 +175,7 @@ public class PlayerCamera : MonoBehaviour
     private void OnPlayerRetaliate(object sender, Side e)
     {
         //_impulseListener
-        _impulseSource.GenerateImpulseWithForce(RetaliateForce);
+        //_impulseSource.GenerateImpulseWithForce(RetaliateForce);
     }
     #endregion
 
