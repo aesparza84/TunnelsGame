@@ -512,6 +512,11 @@ public class PathFinder : MonoBehaviour, IPathFinder, ICompActivate
         MoveSpeed = speed;
     }
 
+    public void SetCoolDown(float newCool)
+    {
+        MoveCoolDown = newCool;
+    }
+
     public void TraversePath()
     {
         //Return if no path queued

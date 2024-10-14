@@ -478,6 +478,60 @@ Transform:
   m_Children: []
   m_Father: {fileID: 151780732}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &88442444
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 88442446}
+  - component: {fileID: 88442445}
+  m_Layer: 0
+  m_Name: DistanceMessanger
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &88442445
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 88442444}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ef02bdf56333eb34b9daf55af20acaca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _Volume: {fileID: 1513152887}
+  MaxVHSSettings: {fileID: 11400000, guid: c0aeb1c445e203242b72dde7ab9b2a06, type: 2}
+  Far_VHS: 0.079
+  Far_Distance: 5
+  Near_VHS: 0.415
+  Near_Distance: 3
+  PointBlank_VHS: 1
+  PointBlank_Distance: 2
+  SettingSwitchSpeed: 4
+  PlayerObj: {fileID: 205521}
+--- !u!4 &88442446
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 88442444}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &121621302
 GameObject:
   m_ObjectHideFlags: 0
@@ -687,7 +741,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!108 &174410276
 Light:
   m_ObjectHideFlags: 0
@@ -1321,6 +1375,8 @@ MonoBehaviour:
   newPos: {x: 0, y: 0}
   LurkSpeed: 2
   HuntSpeed: 4
+  RoamCooldown: 0.1
+  RunCooldown: 0.06
   LingerTime: 1
   AttackCooldown: 3
   HearCooldown: 2
@@ -2235,7 +2291,7 @@ Camera:
   m_Depth: 10
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 1271
+    m_Bits: 1279
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -2282,7 +2338,7 @@ MonoBehaviour:
   m_RendererIndex: -1
   m_VolumeLayerMask:
     serializedVersion: 2
-    m_Bits: 1
+    m_Bits: 8
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
   m_RenderPostProcessing: 1
@@ -3502,7 +3558,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!64 &1342701233
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -3553,7 +3609,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: fd63e8c39fdde1647b8a9b32151eee06, type: 2}
+  - {fileID: 2100000, guid: a2cd9fa64c8585b4d87f3b6d2bfaaa1b, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -3937,7 +3993,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1513152888}
   - component: {fileID: 1513152887}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: GlobalVolume
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4366,7 +4422,7 @@ MonoBehaviour:
   Width: 8
   Height: 5
   SpaceBetween: 1
-  AllowedHidingSpots: 1
+  AllowedHidingSpots: 13
   SquareMap: 1
   startPosX: 2
   startPosY: 2
@@ -11113,3 +11169,4 @@ SceneRoots:
   - {fileID: 486243425}
   - {fileID: 1901930966}
   - {fileID: 1207959349}
+  - {fileID: 88442446}

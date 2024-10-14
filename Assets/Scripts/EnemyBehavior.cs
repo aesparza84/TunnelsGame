@@ -18,6 +18,8 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
     [Header("Move State Speeds")]
     [SerializeField] private float LurkSpeed;
     [SerializeField] private float HuntSpeed;
+    [SerializeField] private float RoamCooldown;
+    [SerializeField] private float RunCooldown;
 
     [Header("Linger Time")]
     [SerializeField] private float LingerTime;
@@ -56,14 +58,18 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
     public event EventHandler OnAttack;
     public event EventHandler<Side> OnATKInterupted;
 
+    //Init event
+    public static event EventHandler<EnemyBehavior> OnEnemyInit;
     private void Awake()
     {
         LevelMessanger.LevelExitCompleted += OnLevelFinished;
         LevelMessanger.LevelStart += OnLevelStart;
-
     }
     private void Start()
     {
+        //Invoke new init event
+        OnEnemyInit?.Invoke(this, this);
+
         _pathFinder = GetComponent<PathFinder>();
         _pathFinder.OnReachedPoint += ReachedDestination;
 
@@ -219,6 +225,7 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
         {
             case EnemyState.LURKING:
                 _pathFinder.SetSpeed(LurkSpeed);
+                _pathFinder.SetCoolDown(RoamCooldown);
                 OnRoam?.Invoke(this, EventArgs.Empty);
 
                 break;
@@ -235,12 +242,14 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
 
             case EnemyState.RETREATING:
                 _pathFinder.SetSpeed(HuntSpeed);
+                _pathFinder.SetCoolDown(RunCooldown);
                 OnRoamFromAttack?.Invoke(this, EventArgs.Empty);
 
 
                 break;
             case EnemyState.LINGERING:
                 currentLingerTime = 0.0f;
+                _pathFinder.SetCoolDown(RoamCooldown);
                 OnIdle?.Invoke(this, EventArgs.Empty);
 
                 break;
