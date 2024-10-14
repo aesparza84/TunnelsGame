@@ -64,11 +64,11 @@ public class CameraTransitioner : MonoBehaviour
     private IEnumerator Entrance(CinemachineCamera from, CinemachineCamera to)
     {
         SwitchToCamera(from);
-        OnEntranceStarted?.Invoke(this, EventArgs.Empty); //Static
 
         yield return new WaitForSeconds(0.8f);
 
         SwitchToCamera(to);
+        OnEntranceStarted?.Invoke(this, EventArgs.Empty); //Static
 
         yield return new WaitForSeconds(1);
 

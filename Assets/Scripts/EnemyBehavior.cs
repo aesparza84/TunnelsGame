@@ -36,6 +36,8 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
     [Header("Encounter Time")]
     [SerializeField] private int EncounterTime;
 
+    [SerializeField] private ParticleSystem _biteParticles;
+
     //Attacking victim look rotations
     private Quaternion AttackLookDirection;
     private Quaternion PrevRotation;
@@ -288,6 +290,7 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
                         vul.OnVulRelease += OnRelease;
                         vul.OnVulRetaliate += OnHit;
                         vul.Attack(transform.position, EncounterTime);
+                        _biteParticles.Play();
 
                         currentAttackTime = 0;
                         PrevRotation = transform.rotation;
@@ -320,6 +323,7 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
         Debug.Log("Released player");
 
         transform.rotation = PrevRotation;
+        _biteParticles.Stop();
 
         EnterState(EnemyState.RETREATING);
     }

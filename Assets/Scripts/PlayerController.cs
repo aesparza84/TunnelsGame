@@ -82,6 +82,8 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
     //Misc. events
     public event EventHandler OnHickySwitch;
     public static event EventHandler OnRetalHit;
+    public static event EventHandler OnInitAttack;
+    public static event EventHandler OnAttackRelease;
 
     //Ear Collider Array
     private Collider[] EarColliders;
@@ -147,6 +149,9 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
         Visible = true;
 
         TargetRotation = transform.localRotation.eulerAngles;
+
+        //Reset filter if on
+        OnAttackRelease?.Invoke(this, EventArgs.Empty);
 
         CompassDirection(Vector3.Dot(transform.forward, Vector3.forward));
         currentCoolDown = SetInputCoolDown;
@@ -665,6 +670,11 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
         CloseMap();
         OnAttacked?.Invoke(this, p);
 
+        if ( (_healthComponent.Health / _healthComponent.MaxHealth) <= 0.4f)
+        {
+            OnInitAttack?.Invoke(this, EventArgs.Empty);
+        }
+
         Vector3 dir = (p - transform.position).normalized;
         float dot = Vector3.Dot(transform.forward, dir);
         currentAttackCooldown = AttackCoolDown; //Reset attack timer
@@ -672,7 +682,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
         //Set to front by default, change if needed by DOT
         AttackingFromFront = true;
 
-        if (dot < 0)
+        if (dot < -0.2f)
         {
             AttackingFromFront = false;
         }
@@ -688,6 +698,9 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
     private IEnumerator AttackCoroutine(IHealth hel, int EncounterTime)
     {
         currentEncounterTime = 0;
+        hel.TakeDamage(1);
+
+
         while (currentEncounterTime < EncounterTime)
         {
             yield return new WaitForSeconds(1);
@@ -735,9 +748,11 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
     
     public void Release()
     {
+
         Punch.Disable();
         Kick.Disable();
 
+        OnAttackRelease?.Invoke(this, EventArgs.Empty);
         OnReleased?.Invoke(this, EventArgs.Empty);
         OnVulRelease?.Invoke(this, EventArgs.Empty);
         EnableAllControls();

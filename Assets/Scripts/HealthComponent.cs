@@ -7,21 +7,22 @@ public class HealthComponent : MonoBehaviour, IHealth
 {
     //Amount of Health
     [Header("Max Health")]
-    [SerializeField] private int MaxHealth;
-    private int Health;
+    [SerializeField] private int _MaxHealth;
+    public int Health { get; private set; }
+    public int MaxHealth { get { return _MaxHealth; } }
 
     public static event EventHandler OnPlayerDeath;
     private void Start()
     {
-        Health = MaxHealth;
+        Health = _MaxHealth;
     }
 
     public void Heal(int n)
     {
         Health += n;
 
-        if (Health >MaxHealth)
-            Health = MaxHealth;
+        if (Health >_MaxHealth)
+            Health = _MaxHealth;
     }
 
     public void TakeDamage(int n)

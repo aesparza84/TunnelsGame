@@ -136,7 +136,7 @@ public class VHSSwitcher : MonoBehaviour
     {
         if (currentVHSWeight != targetWeight)
         {
-            currentVHSWeight = Mathf.Lerp(currentVHSWeight, targetWeight, SettingSwitchSpeed * Time.deltaTime);
+            currentVHSWeight = Mathf.MoveTowards(currentVHSWeight, targetWeight, SettingSwitchSpeed * Time.deltaTime);
             _vhsPostProcess._weight.value = currentVHSWeight;
 
         }
