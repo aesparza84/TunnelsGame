@@ -103,6 +103,7 @@ public class PathGenDFS : MonoBehaviour
     private GridNode[,] _gridNodes;
     public List<GridNode> DeadEnds { get; private set;}
     public GridNode SpawnNode { get; private set; }
+    public GridNode ExitNode { get; private set; }
 
     public GridNode[,] GridNodes { get { return _gridNodes; } } //Property readonly
 
@@ -139,8 +140,15 @@ public class PathGenDFS : MonoBehaviour
     {
         //Static subscription
         LevelMessanger.LevelExitCompleted += GenerateNewLevel;
+        CheeseItem.CheesePickedUp += ActivateExit;
 
         OnNewMapGenerated?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void ActivateExit(object sender, EventArgs e)
+    {
+        Debug.Log("exit opened");
+        ExitNode.roomInfo.ActivateExit();
     }
 
     private void GenerateNewLevel(object sender, EventArgs e)
@@ -163,6 +171,7 @@ public class PathGenDFS : MonoBehaviour
     private void OnDisable()
     {
         LevelMessanger.LevelExitCompleted -= GenerateNewLevel;
+        CheeseItem.CheesePickedUp -= ActivateExit;
     }
 
     private void ResetMap()
@@ -409,7 +418,8 @@ public class PathGenDFS : MonoBehaviour
 
             if (!_gridNodes[tempPoint.X, tempPoint.Y].IsHideSpot && !_gridNodes[tempPoint.X, tempPoint.Y].SpawnNode)
             {
-                _gridNodes[tempPoint.X, tempPoint.Y].roomInfo.SetMazeExit();
+                ExitNode = _gridNodes[tempPoint.X, tempPoint.Y];
+                ExitNode.roomInfo.SetMazeExit();
                 return;
             }
         }

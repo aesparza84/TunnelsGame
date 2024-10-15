@@ -670,7 +670,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
         CloseMap();
         OnAttacked?.Invoke(this, p);
 
-        if ( (_healthComponent.Health / _healthComponent.MaxHealth) <= 0.4f)
+        if ( (_healthComponent.Health / _healthComponent.MaxHealth) <= 0.3f)
         {
             OnInitAttack?.Invoke(this, EventArgs.Empty);
         }

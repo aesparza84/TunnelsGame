@@ -49,6 +49,8 @@ public class AdjustRoom : MonoBehaviour
     //Maze Exit bool
     public bool MazeExit { get; private set; }
 
+    public bool ExitActivated { get; private set; }
+
     public static event EventHandler ExitReached;
     private void Awake()
     {
@@ -61,6 +63,8 @@ public class AdjustRoom : MonoBehaviour
 
         if (RoomTrigger != null)
             RoomTrigger.enabled = false;
+
+        ExitActivated = false;
     }
     //Public Methods
     public void SetEntrance(OpeningSide side)
@@ -244,8 +248,12 @@ public class AdjustRoom : MonoBehaviour
         //End of level
         if (MazeExit)
         {
-            ExitReached?.Invoke(this, EventArgs.Empty);
-            UnityEngine.Debug.Log("Player escaped, make a new level");
+            if (ExitActivated)
+            {
+                ExitReached?.Invoke(this, EventArgs.Empty);
+                //UnityEngine.Debug.Log("Player escaped, make a new level");
+            }
+            
         }
     }
 
@@ -273,5 +281,10 @@ public class AdjustRoom : MonoBehaviour
                 h.Reveal();
             }
         }
+    }
+
+    public void ActivateExit()
+    {
+        ExitActivated = true;
     }
 }
