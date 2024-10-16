@@ -212,6 +212,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5184863731494062744}
   - component: {fileID: 45051904284984477}
+  - component: {fileID: -8765403987592037588}
   - component: {fileID: 3426798287923586967}
   - component: {fileID: -4749946926748967313}
   m_Layer: 0
@@ -253,6 +254,18 @@ MonoBehaviour:
   BounceHeight: 0.3
   BounceSpeed: 5
   ItemMesh: {fileID: 4250612515679219202}
+--- !u!114 &-8765403987592037588
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5544513462483091911}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 83326f9283dd8c146a19a8740357ad48, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!65 &3426798287923586967
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -272,8 +285,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.5, y: 0.98, z: 0.5}
-  m_Center: {x: 0, y: 0.5, z: 0}
+  m_Size: {x: 0.5, y: 0.67509496, z: 0.5}
+  m_Center: {x: 0, y: 0.34754747, z: 0}
 --- !u!54 &-4749946926748967313
 Rigidbody:
   m_ObjectHideFlags: 0

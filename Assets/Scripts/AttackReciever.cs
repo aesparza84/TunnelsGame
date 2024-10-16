@@ -9,7 +9,7 @@ public class AttackReciever : MonoBehaviour
 
     void Start()
     {
-        PlayerController.OnInitAttack += Attack;
+        PlayerController.OnAttackLowHealth += Attack;
         PlayerController.OnAttackRelease += Release;
 
         _imageObject.SetActive(false);
@@ -27,7 +27,7 @@ public class AttackReciever : MonoBehaviour
 
     private void OnDisable()
     {
-        PlayerController.OnInitAttack -= Attack;
+        PlayerController.OnAttackLowHealth -= Attack;
         PlayerController.OnAttackRelease -= Release;
     }
 }

@@ -82,7 +82,8 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
     //Misc. events
     public event EventHandler OnHickySwitch;
     public static event EventHandler OnRetalHit;
-    public static event EventHandler OnInitAttack;
+    public static event EventHandler OnAttackLowHealth;
+    public static event EventHandler OnAttackStatic;
     public static event EventHandler OnAttackRelease;
 
     //Ear Collider Array
@@ -669,10 +670,11 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
     {
         CloseMap();
         OnAttacked?.Invoke(this, p);
+        OnAttackStatic?.Invoke(this, EventArgs.Empty);
 
         if ( (_healthComponent.Health / _healthComponent.MaxHealth) <= 0.3f)
         {
-            OnInitAttack?.Invoke(this, EventArgs.Empty);
+            OnAttackLowHealth?.Invoke(this, EventArgs.Empty);
         }
 
         Vector3 dir = (p - transform.position).normalized;

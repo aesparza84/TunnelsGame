@@ -121,6 +121,11 @@ public class PathFinder : MonoBehaviour, IPathFinder, ICompActivate
         _activeState = ActiveState.ACTIVE;        
     }
 
+    public void WarmStartPosition()
+    {
+        SpawnAtRandomEnd();
+    }
+
     public void DisableComponent()
     {
         StopAllCoroutines();//Stop pathfinding coroutine

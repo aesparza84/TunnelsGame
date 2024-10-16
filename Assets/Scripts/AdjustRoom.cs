@@ -52,6 +52,7 @@ public class AdjustRoom : MonoBehaviour
     public bool ExitActivated { get; private set; }
 
     public static event EventHandler ExitReached;
+    public static event EventHandler ExitNoCheese;
     private void Awake()
     {
         entranceSide = OpeningSide.NONE;
@@ -252,6 +253,11 @@ public class AdjustRoom : MonoBehaviour
             {
                 ExitReached?.Invoke(this, EventArgs.Empty);
                 //UnityEngine.Debug.Log("Player escaped, make a new level");
+            }
+            else
+            {
+                //No cheese dialogue
+                ExitNoCheese?.Invoke(this, EventArgs.Empty);
             }
             
         }

@@ -29,6 +29,10 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
     [SerializeField] private float AttackCooldown;
     private float currentAttackTime;
 
+    [Header("Particles")]
+    [SerializeField] private ParticleSystem IntroDirtParticles;
+    [SerializeField] private ParticleSystem DustBurstParticles;
+
     [Header("Hear Cooldown")]
     [SerializeField] private float HearCooldown;
     private float currentHearTime;
@@ -85,6 +89,13 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
     private void OnLevelStart(object sender, System.EventArgs e)
     {
         //Disable enemy behavior
+        _pathFinder.WarmStartPosition();
+        IntroDirtParticles.Play();
+        DustBurstParticles.Stop();
+
+        Vector3 p = transform.position;
+        p.y += 1;
+        transform.position = p;
         Invoke("ActivateComponent", 5);
     }
 
@@ -97,6 +108,9 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
 
     public void ActivateComponent()
     {
+        DustBurstParticles.Play();
+        IntroDirtParticles.Stop();
+
         _pathFinder.ActivateComponent();
         _activeState = ActiveState.ACTIVE;
         currentAttackTime = AttackCooldown;
@@ -105,6 +119,9 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
     }
     public void DisableComponent()
     {
+        DustBurstParticles.Stop();
+        IntroDirtParticles.Stop();
+
         _pathFinder.DisableComponent();
         _activeState = ActiveState.DISABLED;
     }
@@ -142,7 +159,7 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
                 break;
             case EnemyState.HUNTING:
                 //Nothing over time
-
+                
                 break;
             case EnemyState.ATTACKING:
                 //Look towards Victim

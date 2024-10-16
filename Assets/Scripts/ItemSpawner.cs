@@ -15,14 +15,25 @@ public class ItemSpawner : MonoBehaviour
     private PathGenDFS _pathGen;
     private GridNode[,] Map;
 
+    //trakced spawned Items
+    private List<GameObject> trackeditems;
+
     private void Awake()
     {
+        trackeditems = new List<GameObject>();
+
         _pathGen = GetComponent<PathGenDFS>();
         LevelMessanger.MapReady += Updatemap;
     }
 
     private void Updatemap(object sender, System.EventArgs e)
     {
+        if (trackeditems.Count > 0)
+        {
+            ClearItems();
+        }
+
+        Debug.Log("Updaet map clalled");
         Map = _pathGen.GridNodes;
         SpawnRandomWeapons();
         SpawnCheese();
@@ -39,14 +50,29 @@ public class ItemSpawner : MonoBehaviour
 
             y = UnityEngine.Random.Range(0, WeaponPrefabs.Count);
 
-            Instantiate(WeaponPrefabs[y], Map[n.X, n.Y]._transform.position, Quaternion.identity);
+            GameObject p = Instantiate(WeaponPrefabs[y], Map[n.X, n.Y]._transform.position, Quaternion.identity);
+            trackeditems.Add(p);
         }
     }
 
     private void SpawnCheese()
     {
         Point p = GetRandomPoint();
-        Instantiate(CheeseObj, Map[p.X, p.Y]._transform.position, Quaternion.identity);
+        GameObject c = Instantiate(CheeseObj, Map[p.X, p.Y]._transform.position, Quaternion.identity);
+        trackeditems.Add(c);
+    }
+
+    private void ClearItems()
+    {
+        foreach (GameObject item in trackeditems)
+        {
+            if (item != null)
+            {
+                Destroy(item);
+            }
+        }
+
+        trackeditems.Clear();
     }
     private Point GetRandomPoint()
     {
