@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3e51fd24eb2bef8478eed332e805c5ee, type: 3}
-  m_Name: RegularVHS
+  m_Name: DeathSceneVHS
   m_EditorClassIdentifier: 
   WeightVal: 1
-  BleedVal: 0
-  RockingVal: 0
-  TapeVal: 0.3
-  NoiseVal: 0.4
-  FlickeringVal: 0
-  GlitchColor: {r: 0, g: 0, b: 0, a: 0}
+  BleedVal: 7.16
+  RockingVal: 0.022
+  TapeVal: 1.649
+  NoiseVal: 0.891
+  FlickeringVal: 2
+  GlitchColor: {r: 0.4245283, g: 0.06608224, b: 0.06608224, a: 0}

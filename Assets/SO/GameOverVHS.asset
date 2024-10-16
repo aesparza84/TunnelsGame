@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3e51fd24eb2bef8478eed332e805c5ee, type: 3}
-  m_Name: NerabyVHS
+  m_Name: GameOverVHS
   m_EditorClassIdentifier: 
   WeightVal: 1
-  BleedVal: 0
+  BleedVal: 10
   RockingVal: 0
-  TapeVal: 1
-  NoiseVal: 0.6
-  FlickeringVal: 0.168
-  GlitchColor: {r: 0, g: 0, b: 0, a: 0}
+  TapeVal: 0
+  NoiseVal: 1
+  FlickeringVal: 2
+  GlitchColor: {r: 1, g: 1, b: 1, a: 0}

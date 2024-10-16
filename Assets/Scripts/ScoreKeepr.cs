@@ -11,7 +11,7 @@ public class ScoreKeepr : MonoBehaviour
         HighestScore = -1;
 
         AdjustRoom.ExitReached += OnExitReached;
-        HealthComponent.OnPlayerDeath += OnPlayerDeath;
+        PlayerController.OnDeath += OnPlayerDeath;
     }
 
     private void OnPlayerDeath(object sender, System.EventArgs e)
@@ -30,6 +30,6 @@ public class ScoreKeepr : MonoBehaviour
     private void OnDisable()
     {
         AdjustRoom.ExitReached -= OnExitReached;
-        HealthComponent.OnPlayerDeath -= OnPlayerDeath;
+        PlayerController.OnDeath -= OnPlayerDeath;
     }
 }

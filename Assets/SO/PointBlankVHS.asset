@@ -18,4 +18,4 @@ MonoBehaviour:
   TapeVal: 1
   NoiseVal: 0.947
   FlickeringVal: 0.952
-  GlitchColor: {r: 0.509434, g: 0, b: 0, a: 0}
+  GlitchColor: {r: 0.3764706, g: 0.03137255, b: 0, a: 1}

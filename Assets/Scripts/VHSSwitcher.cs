@@ -12,6 +12,11 @@ public class VHSSwitcher : MonoBehaviour
 
     [Header("VHS SO")]
     [SerializeField] private VHSSO MaxVHSSettings;
+    [SerializeField] private VHSSO EntranceExitVHSSettings;
+    [SerializeField] private VHSSO DeathVHSSettings;
+    [SerializeField] private VHSSO GameOverVHSSettings;
+    [SerializeField] private float LerpSpeed;
+    [SerializeField] private float TargetRegularWeight;
 
     [Header("Target Weight Percent")]
     [Range(0f, 1f)]
@@ -27,12 +32,14 @@ public class VHSSwitcher : MonoBehaviour
     private float targetWeight;
     private bool SwitchVHS;
 
+    private bool ActiveComponent;
+
     [Header("Setting Lerp Speed")]
     [SerializeField] private float SettingSwitchSpeed;
 
     //Voluem component add-on
     private VhsVol _vhsPostProcess;
-    private VHS_SETTING _vhsSetting;
+    private VHS_SETTING _vhsDistanceSetting;
 
     [Header("Player Object")]
     [SerializeField] private GameObject PlayerObj;
@@ -50,17 +57,102 @@ public class VHSSwitcher : MonoBehaviour
             _vhsPostProcess = v;
         }
 
+        LevelMessanger.LevelFinished += OnExitTransition;
+        LevelMessanger.LevelStart += OnEntranceTransition;
+        LevelMessanger.GameLoopStopped += SwitchToDeathVHS;
+        RatKillEvent.KilledAnimFinished += SwitchToGameOverVHS;
+
+        ConfigureNewVHSSettings(MaxVHSSettings);
+    }
+
+    private void SwitchToGameOverVHS(object sender, System.EventArgs e)
+    {
+        InstantSwitchSettings(GameOverVHSSettings);
+    }
+
+    private void SwitchToDeathVHS(object sender, System.EventArgs e)
+    {
+        ActiveComponent = false;
+        InstantSwitchSettings(DeathVHSSettings);
+    }
+
+    private void OnEntranceTransition(object sender, System.EventArgs e)
+    {
+        StopCoroutine(VHS_Exit());
+        StartCoroutine(VHS_Entrance());
+    }
+
+    private void OnExitTransition(object sender, System.EventArgs e)
+    {
+        StartCoroutine(VHS_Exit());
+    }
+
+    private IEnumerator VHS_Entrance()
+    {
+        currentVHSWeight = _vhsPostProcess._weight.value;
+
+        while (currentVHSWeight > 0)
+        {
+            currentVHSWeight = Mathf.MoveTowards(currentVHSWeight, 0, LerpSpeed * Time.deltaTime);
+            _vhsPostProcess._weight.value = currentVHSWeight;
+            yield return null;
+        }
+
+        ConfigureNewVHSSettings(MaxVHSSettings);
+
+        while (currentVHSWeight < TargetRegularWeight)
+        {
+            currentVHSWeight = Mathf.MoveTowards(currentVHSWeight, TargetRegularWeight, LerpSpeed * Time.deltaTime);
+            _vhsPostProcess._weight.value = currentVHSWeight;
+            yield return null;
+        }
+
+        ActiveComponent = true;
         EnterVHS_State(VHS_SETTING.FAR);
+
+        yield return null;
+    }
+    private IEnumerator VHS_Exit()
+    {
+        ActiveComponent = false;
+
+        _vhsPostProcess._weight.value = 0.0f;
+        ConfigureNewVHSSettings(EntranceExitVHSSettings);
+
+        currentVHSWeight = _vhsPostProcess._weight.value;
+        while (currentVHSWeight < 1)
+        {
+            currentVHSWeight = Mathf.MoveTowards(currentVHSWeight, 1, LerpSpeed * Time.deltaTime);
+            _vhsPostProcess._weight.value = currentVHSWeight;
+            yield return null;
+        }
+
+        yield return null;
     }
 
     private void LateUpdate()
     {
+        if (!ActiveComponent)
+        {
+            return;
+        }
+
         VHS_EnemyCheck();
 
         if (SwitchVHS)
         {
             LerpVHSSetting();
         }
+    }
+
+    private void ConfigureNewVHSSettings(VHSSO settings)
+    {
+        _vhsPostProcess._bleed.value = settings.BleedVal;
+        _vhsPostProcess._rocking.value = settings.RockingVal;
+        _vhsPostProcess._tape.value = settings.TapeVal;
+        _vhsPostProcess._noise.value = settings.NoiseVal;
+        _vhsPostProcess._flickering.value = settings.FlickeringVal;
+        _vhsPostProcess._glitch.value = settings.GlitchColor;
     }
 
     /// <summary>
@@ -107,13 +199,13 @@ public class VHSSwitcher : MonoBehaviour
 
     private void EnterVHS_State(VHS_SETTING newSetting)
     {
-        if (_vhsSetting == newSetting)
+        if (_vhsDistanceSetting == newSetting)
             return;
 
-        _vhsSetting = newSetting;
+        _vhsDistanceSetting = newSetting;
         SwitchVHS = true;
 
-        switch (_vhsSetting)
+        switch (_vhsDistanceSetting)
         {
             case VHS_SETTING.FAR:
                 targetWeight = Far_VHS;
@@ -145,5 +237,20 @@ public class VHSSwitcher : MonoBehaviour
             //Switch off lerp
             SwitchVHS = false;
         }
+    }
+
+    private void InstantSwitchSettings(VHSSO setting)
+    {
+        ConfigureNewVHSSettings(setting);
+        _vhsPostProcess._weight.value = 1;
+    }
+
+
+    private void OnDisable()
+    {
+        LevelMessanger.LevelFinished -= OnExitTransition;
+        LevelMessanger.LevelStart -= OnEntranceTransition;
+        LevelMessanger.GameLoopStopped -= SwitchToDeathVHS;
+        RatKillEvent.KilledAnimFinished -= SwitchToGameOverVHS;
     }
 }

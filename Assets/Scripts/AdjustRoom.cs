@@ -249,17 +249,19 @@ public class AdjustRoom : MonoBehaviour
         //End of level
         if (MazeExit)
         {
-            if (ExitActivated)
+            if (other.TryGetComponent<PlayerController>(out PlayerController p))
             {
-                ExitReached?.Invoke(this, EventArgs.Empty);
-                //UnityEngine.Debug.Log("Player escaped, make a new level");
+                if (ExitActivated)
+                {
+                    ExitReached?.Invoke(this, EventArgs.Empty);
+                    //UnityEngine.Debug.Log("Player escaped, make a new level");
+                }
+                else
+                {
+                    //No cheese dialogue
+                    ExitNoCheese?.Invoke(this, EventArgs.Empty);
+                }
             }
-            else
-            {
-                //No cheese dialogue
-                ExitNoCheese?.Invoke(this, EventArgs.Empty);
-            }
-            
         }
     }
 

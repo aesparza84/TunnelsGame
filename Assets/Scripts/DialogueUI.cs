@@ -57,6 +57,6 @@ public class DialogueUI : MonoBehaviour
     {
         AdjustRoom.ExitNoCheese -= OnNoCheeseExit;
         CheeseItem.CheesePickedUp -= OnCheesePickedUp;
-
+        PlayerController.OnAttackStatic -= OnAttackDialogue;
     }
 }

@@ -69,6 +69,7 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
     private void Awake()
     {
         LevelMessanger.LevelExitCompleted += OnLevelFinished;
+        LevelMessanger.GameLoopStopped += OnLevelFinished;
         LevelMessanger.LevelStart += OnLevelStart;
     }
     private void Start()
@@ -349,6 +350,7 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
     {
         _pathFinder.OnReachedPoint -= ReachedDestination;
         LevelMessanger.LevelExitCompleted -= OnLevelFinished;
+        LevelMessanger.GameLoopStopped -= OnLevelFinished;
         LevelMessanger.LevelStart -= OnLevelStart;
     }
 }

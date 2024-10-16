@@ -10,15 +10,15 @@ public class VHSSO : ScriptableObject
     public float WeightVal;
 
     [Header("Bleed")]
-    [Range(0, 1)]
+    [Range(0, 10)]
     public float BleedVal;
 
     [Header("Rocking")]
-    [Range(0, 1)]
+    [Range(0, 0.1f)]
     public float RockingVal;
 
     [Header("Tape")]
-    [Range(0, 1)]
+    [Range(0, 2)]
     public float TapeVal;
 
     [Header("Noise")]
@@ -26,7 +26,7 @@ public class VHSSO : ScriptableObject
     public float NoiseVal;
 
     [Header("Flicker")]
-    [Range(0, 1)]
+    [Range(0, 2)]
     public float FlickeringVal;
 
     [Header("Glitching")]

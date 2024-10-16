@@ -19,6 +19,8 @@ public class LevelMessanger : MonoBehaviour
     //Load next level layout, reset map data, enemy & player etc.
     public static event EventHandler LevelExitCompleted;
 
+    public static event EventHandler GameLoopStopped;
+
     private void Awake()
     {
         Application.targetFrameRate = 240;
@@ -31,6 +33,12 @@ public class LevelMessanger : MonoBehaviour
         AdjustRoom.ExitReached += LevelFinish;
         PathGenDFS.OnNewMapGenerated += MapCompleted;
         MapManeuver.PlayerReset += PlayerPosReset;
+        PlayerController.OnDeath += StopGameLoop;
+    }
+
+    private void StopGameLoop(object sender, EventArgs e)
+    {
+        GameLoopStopped?.Invoke(this, EventArgs.Empty);
     }
 
     //We Reset Player position, clear & update all pathfinding data to new MAP
@@ -78,5 +86,6 @@ public class LevelMessanger : MonoBehaviour
         AdjustRoom.ExitReached -= LevelFinish;
         PathGenDFS.OnNewMapGenerated -= MapCompleted;
         MapManeuver.PlayerReset -= PlayerPosReset;
+        PlayerController.OnDeath -= StopGameLoop;
     }
 }

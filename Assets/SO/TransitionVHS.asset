@@ -10,18 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3e51fd24eb2bef8478eed332e805c5ee, type: 3}
-  m_Name: NoVHS
+  m_Name: TransitionVHS
   m_EditorClassIdentifier: 
-  WeightVal: 0
-  Bleed: 0
-  BleedVal: 0
-  Rocking: 0
+  WeightVal: 1
+  BleedVal: 1
   RockingVal: 0
-  Tape: 0
   TapeVal: 0
-  Noise: 0
-  NoiseVal: 0
-  Flickering: 0
-  FlickeringVal: 0
-  Glitch: 0
-  GlitchColor: {r: 0, g: 0, b: 0, a: 0}
+  NoiseVal: 1
+  FlickeringVal: 1
+  GlitchColor: {r: 1, g: 1, b: 1, a: 0}

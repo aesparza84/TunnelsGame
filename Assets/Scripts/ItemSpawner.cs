@@ -26,6 +26,11 @@ public class ItemSpawner : MonoBehaviour
         LevelMessanger.MapReady += Updatemap;
     }
 
+    private void OnDisable()
+    {
+        LevelMessanger.MapReady -= Updatemap;
+    }
+
     private void Updatemap(object sender, System.EventArgs e)
     {
         if (trackeditems.Count > 0)

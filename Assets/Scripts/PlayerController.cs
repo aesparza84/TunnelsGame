@@ -85,6 +85,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
     public static event EventHandler OnAttackLowHealth;
     public static event EventHandler OnAttackStatic;
     public static event EventHandler OnAttackRelease;
+    public static event EventHandler OnDeath;
 
     //Ear Collider Array
     private Collider[] EarColliders;
@@ -127,11 +128,18 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
 
         currentCoolDown = SetInputCoolDown;
 
+        _healthComponent.OnPlayerDeath += PlayerDeath;
         LevelMessanger.LevelExitCompleted += EndLevel;
         LevelMessanger.LevelStart += LevelReady;
 
         //Start Disabled
         _activeState = ActiveState.DISABLED;
+    }
+
+    private void PlayerDeath(object sender, EventArgs e)
+    {
+        OnDeath?.Invoke(this, EventArgs.Empty);
+        DisableAllControls();
     }
 
     private void LevelReady(object sender, EventArgs e)
@@ -593,6 +601,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
         CheckMap.started -= OnMapOpen;
         DooHickyMode.started -= OnDooHickySwitch;
 
+        _healthComponent.OnPlayerDeath -= PlayerDeath;
         LevelMessanger.LevelExitCompleted -= EndLevel;
         LevelMessanger.LevelStart -= LevelReady;
     }

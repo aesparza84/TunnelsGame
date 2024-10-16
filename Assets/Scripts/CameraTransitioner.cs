@@ -6,10 +6,15 @@ using UnityEngine;
 
 public class CameraTransitioner : MonoBehaviour
 {
+    [Header("CM Brain Reference")]
+    [SerializeField] private CinemachineBrain _brain;
+    [SerializeField] private float blendTime;
+
     [Header("Camera Referenes")]
     [SerializeField] private CinemachineCamera PlayerMainCam;
     [SerializeField] private CinemachineCamera PlayerLowerCam;
     [SerializeField] private CinemachineCamera PlayerUpperCam;
+    [SerializeField] private CinemachineCamera DeathCamera;
     private CinemachineCamera _currentCamera;
 
     [Header("Entrance Force")]
@@ -31,11 +36,23 @@ public class CameraTransitioner : MonoBehaviour
 
         //Activate Exit cam to pan donw and fade to black
         LevelMessanger.LevelFinished += OnExit;
+
+        LevelMessanger.GameLoopStopped += OnGoToDeathCamera;
     }
 
+    private void OnGoToDeathCamera(object sender, EventArgs e)
+    {
+        _brain.DefaultBlend.Time = 0.0f;   
+        SwitchToCamera(DeathCamera);
+        
+    }
 
     private void OnEntrance(object sender, System.EventArgs e)
     {
+        if (_brain.DefaultBlend.Time != blendTime)
+        {
+            _brain.DefaultBlend.Time = blendTime;
+        }
         StartCoroutine(Entrance(PlayerUpperCam, PlayerLowerCam));
     }
 
@@ -89,5 +106,6 @@ public class CameraTransitioner : MonoBehaviour
     {
         LevelMessanger.PlayerReset -= OnEntrance;
         LevelMessanger.LevelFinished -= OnExit;
+        LevelMessanger.GameLoopStopped -= OnGoToDeathCamera;
     }
 }

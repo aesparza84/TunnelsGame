@@ -11,7 +11,7 @@ public class HealthComponent : MonoBehaviour, IHealth
     public int Health { get; private set; }
     public int MaxHealth { get { return _MaxHealth; } }
 
-    public static event EventHandler OnPlayerDeath;
+    public event EventHandler OnPlayerDeath;
     private void Start()
     {
         Health = _MaxHealth;

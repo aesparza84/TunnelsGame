@@ -27,6 +27,7 @@ public class CameraShaker : MonoBehaviour
 
         PlayerController.OnRetalHit += OnRetaliate;
         CameraTransitioner.OnEntranceStarted += OnEntrance;
+        LevelMessanger.GameLoopStopped += OnRetaliate;
     }
 
     private void OnEntrance(object sender, System.EventArgs e)
@@ -59,5 +60,7 @@ public class CameraShaker : MonoBehaviour
     private void OnDisable()
     {
         PlayerController.OnRetalHit -= OnRetaliate;
+        CameraTransitioner.OnEntranceStarted -= OnEntrance;
+        LevelMessanger.GameLoopStopped -= OnRetaliate;
     }
 }
