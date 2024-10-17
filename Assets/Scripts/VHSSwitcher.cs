@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.Rendering.VirtualTexturing;
 using VolFx;
 public enum VHS_SETTING { FAR, NEAR, POINTBLANK }
@@ -9,6 +10,11 @@ public class VHSSwitcher : MonoBehaviour
 {
     [Header("Volume")]
     [SerializeField] private Volume _Volume;
+
+    [SerializeField] private Color healColor;
+    [SerializeField] private Color critialColor;
+    [SerializeField] private float VignettSpeed;
+    private Vignette _VolVignete;
 
     [Header("VHS SO")]
     [SerializeField] private VHSSO MaxVHSSettings;
@@ -59,14 +65,27 @@ public class VHSSwitcher : MonoBehaviour
             _vhsPostProcess = v;
         }
 
+        if (_Volume.profile.TryGet<Vignette>(out Vignette vi))
+        {
+            _VolVignete = vi;
+        }
+
         LevelMessanger.LevelFinished += OnExitTransition;
         LevelMessanger.LevelStart += OnEntranceTransition;
         LevelMessanger.GameLoopStopped += SwitchToDeathVHS;
         LevelMessanger.DifficultyIncrease += DiffictultyVisualUpdate;
         RatKillEvent.KilledAnimFinished += SwitchToGameOverVHS;
+        HealthComponent.OnHeal += HealVisuals;
 
         InstantSwitchSettings(EntranceExitVHSSettings);
 
+    }
+
+    private void HealVisuals(object sender, System.EventArgs e)
+    {
+        _VolVignete.color.value = healColor;
+        _VolVignete.active = true;
+        _VolVignete.intensity.value = 0.47f;
     }
 
     private void DiffictultyVisualUpdate(object sender, System.EventArgs e)
@@ -159,6 +178,11 @@ public class VHSSwitcher : MonoBehaviour
         if (SwitchVHS)
         {
             LerpVHSSetting();
+        }
+
+        if (_VolVignete.intensity.value > 0)
+        {
+            _VolVignete.intensity.value = Mathf.MoveTowards(_VolVignete.intensity.value, 0, VignettSpeed * Time.deltaTime);
         }
     }
 
@@ -270,5 +294,6 @@ public class VHSSwitcher : MonoBehaviour
         LevelMessanger.GameLoopStopped -= SwitchToDeathVHS;
         LevelMessanger.DifficultyIncrease -= DiffictultyVisualUpdate;
         RatKillEvent.KilledAnimFinished -= SwitchToGameOverVHS;
+        HealthComponent.OnHeal -= HealVisuals;
     }
 }

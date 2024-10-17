@@ -40,6 +40,9 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
     [Header("Encounter Time")]
     [SerializeField] private int EncounterTime;
 
+    //AudioSource component
+    private AudioSource _audioSource;
+
     [SerializeField] private ParticleSystem _biteParticles;
 
     //Attacking victim look rotations
@@ -66,14 +69,30 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
 
     //Init event
     public static event EventHandler<EnemyBehavior> OnEnemyInit;
+
+    //Audio Request
+    public static event EventHandler< Tuple<AudioSource, byte> > OnAudioRequest;
+
+    private bool AppFocused;
+
     private void Awake()
     {
         LevelMessanger.LevelExitCompleted += OnLevelFinished;
         LevelMessanger.GameLoopStopped += OnLevelFinished;
         LevelMessanger.LevelStart += OnLevelStart;
+        LevelMessanger.OnAppFocus += AppFocus;
     }
+
+    private void AppFocus(object sender, bool e)
+    {
+        AppFocused = e;
+    }
+
     private void Start()
     {
+        _audioSource = GetComponent<AudioSource>();
+        _audioSource.Stop();
+
         //Invoke new init event
         OnEnemyInit?.Invoke(this, this);
 
@@ -143,6 +162,8 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
 
         HandleStates();
 
+        HandleAudio();
+
         //Reset hear time
         if (currentHearTime < HearCooldown)
         {
@@ -189,6 +210,7 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
                 break;
         }
 
+        //In Update Loop
         if (_enemyState != EnemyState.ATTACKING)
         {
             if (currentAttackTime < AttackCooldown)
@@ -196,7 +218,34 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
                 currentAttackTime += Time.deltaTime;
             }
         }
+
+    }
+
+    private void HandleAudio()
+    {
+        if (!AppFocused)
+            return;
+
+        if (_enemyState != EnemyState.ATTACKING)
+        {
+            if (!_audioSource.isPlaying)
+            {
+                CreateAudioRequest(0);
+            }
+        }
         
+    }
+
+    /// <summary>
+    /// 0 = GrowlLoop;
+    /// 1 = AttackSoundLoop
+    /// </summary>
+    /// <param name="soundType"></param>
+    private void CreateAudioRequest(byte soundType)
+    {
+        Tuple<AudioSource, byte> m = new Tuple<AudioSource, byte>(_audioSource, soundType);
+
+        OnAudioRequest?.Invoke(this, m);
     }
 
     private void MoveToRandomPoint()
@@ -357,5 +406,6 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
         LevelMessanger.LevelExitCompleted -= OnLevelFinished;
         LevelMessanger.GameLoopStopped -= OnLevelFinished;
         LevelMessanger.LevelStart -= OnLevelStart;
+        LevelMessanger.OnAppFocus -= AppFocus;
     }
 }

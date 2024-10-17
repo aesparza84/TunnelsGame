@@ -22,6 +22,8 @@ public class LevelMessanger : MonoBehaviour
 
     public static event EventHandler DifficultyIncrease;
 
+    public static event EventHandler<bool> OnAppFocus;
+
     private void Awake()
     {
         Application.targetFrameRate = 240;
@@ -36,6 +38,11 @@ public class LevelMessanger : MonoBehaviour
         MapManeuver.PlayerReset += PlayerPosReset;
         PlayerController.OnDeath += StopGameLoop;
         ScoreKeepr.DifficultyIncrease += DifficultyMapSettings;
+    }
+
+    private void OnApplicationFocus(bool focus)
+    {
+        OnAppFocus?.Invoke(this, focus);
     }
 
     private void DifficultyMapSettings(object sender, EventArgs e)

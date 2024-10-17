@@ -12,6 +12,8 @@ public class HealthComponent : MonoBehaviour, IHealth
     public int MaxHealth { get { return _MaxHealth; } }
 
     public event EventHandler OnPlayerDeath;
+    public static event EventHandler OnHeal;
+
     private void Start()
     {
         Health = _MaxHealth;
@@ -19,6 +21,7 @@ public class HealthComponent : MonoBehaviour, IHealth
 
     public void Heal(int n)
     {
+        OnHeal?.Invoke(this, EventArgs.Empty);
         Health += n;
 
         if (Health >_MaxHealth)

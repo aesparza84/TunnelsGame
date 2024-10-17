@@ -11,6 +11,7 @@ public class CheeseItem : MonoBehaviour, IPickUp
     {
         if (other.TryGetComponent<PlayerController>(out PlayerController p))
         {
+            p.GetComponent<IHealth>().Heal(3);
             CheesePickedUp?.Invoke(this, EventArgs.Empty);
             Destroy(gameObject);
         }
