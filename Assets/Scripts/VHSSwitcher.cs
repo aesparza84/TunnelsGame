@@ -25,6 +25,13 @@ public class VHSSwitcher : MonoBehaviour
     [SerializeField] private float LerpSpeed;
     [SerializeField] private float TargetRegularWeight;
 
+    [Header("Audio")]
+    [SerializeField] private bool UsingSound;
+    [SerializeField] private Sound GlitchSound;
+    [SerializeField] private Sound DeathGlitchSound;
+    private float currentVol;
+    private AudioSource _audioSource;
+
     [Header("Target Weight Percent")]
     [Range(0f, 1f)]
     [SerializeField] private float Far_VHS;
@@ -58,6 +65,8 @@ public class VHSSwitcher : MonoBehaviour
 
     private void Start()
     {
+        _audioSource = GetComponent<AudioSource>();
+
         _enemyColliders = new Collider[5];
 
         if (_Volume.profile.TryGet<VhsVol>(out VhsVol v))
@@ -106,6 +115,7 @@ public class VHSSwitcher : MonoBehaviour
 
     private void OnEntranceTransition(object sender, System.EventArgs e)
     {
+        ChangeSound(GlitchSound);
         StopCoroutine(VHS_Exit());
         StartCoroutine(VHS_Entrance());
     }
@@ -117,6 +127,7 @@ public class VHSSwitcher : MonoBehaviour
 
     private IEnumerator VHS_Entrance()
     {
+
         currentVHSWeight = _vhsPostProcess._weight.value;
 
         while (currentVHSWeight > 0)
@@ -222,19 +233,30 @@ public class VHSSwitcher : MonoBehaviour
 
             if (lowestDist <= PointBlank_Distance)
             {
-                EnterVHS_State(VHS_SETTING.POINTBLANK);
+                //EnterVHS_State(VHS_SETTING.POINTBLANK);
+                UpdateVHSSettings(lowestDist, PointBlank_Distance, PointBlank_VHS);
 
             }
             else if (lowestDist <= Near_Distance)
             {
-                EnterVHS_State(VHS_SETTING.NEAR);
+                //EnterVHS_State(VHS_SETTING.NEAR);
+                UpdateVHSSettings(lowestDist, Near_Distance, Near_VHS);
 
             }
             else if (lowestDist <= Far_Distance)
             {
-                EnterVHS_State(VHS_SETTING.FAR);
+                //EnterVHS_State(VHS_SETTING.FAR);
+                UpdateVHSSettings(lowestDist, Far_Distance, Far_VHS);
             }
 
+            if (UsingSound)
+            {
+                if (_audioSource != null)
+                {
+                    SetGlitchSound(lowestDist);
+                }
+
+            }
         }
     }
 
@@ -278,6 +300,35 @@ public class VHSSwitcher : MonoBehaviour
             //Switch off lerp
             SwitchVHS = false;
         }
+    }
+
+    private void UpdateVHSSettings(float distance, float targetDist, float cap)
+    {
+        currentVHSWeight = Mathf.InverseLerp(Far_VHS, targetDist, distance);
+        currentVHSWeight = Mathf.Clamp(currentVHSWeight, Far_VHS, cap);
+
+        _vhsPostProcess._weight.value = currentVHSWeight;
+    }
+
+    private void SetGlitchSound(float distance)
+    {
+        //PointBlank_Distance = 2
+        currentVol = Mathf.InverseLerp(PointBlank_Distance, Far_VHS, distance);
+        currentVol = Mathf.Clamp(currentVol, 0, 1);
+        _audioSource.volume = currentVol;
+    }
+
+    private void ChangeSound(Sound s)
+    {
+        _audioSource.clip = s.soundClip;
+        _audioSource.priority = s.Priority;
+        _audioSource.volume = s.Volume;
+        _audioSource.pitch = s.Pitch;
+        _audioSource.panStereo = s.StereoPan;
+        _audioSource.spatialBlend = s.SpatialBlend;
+        _audioSource.minDistance = s.MinDistance;
+        _audioSource.maxDistance = s.MaxDistance;
+        _audioSource.Play();
     }
 
     private void InstantSwitchSettings(VHSSO setting)
