@@ -132,8 +132,20 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
         LevelMessanger.LevelExitCompleted += EndLevel;
         LevelMessanger.LevelStart += LevelReady;
 
+        PauseMenu.OnPause += OnPause;
+        PauseMenu.OnResume += OnResum;
         //Start Disabled
         _activeState = ActiveState.DISABLED;
+    }
+
+    private void OnResum(object sender, EventArgs e)
+    {
+        EnableAllControls();
+    }
+
+    private void OnPause(object sender, EventArgs e)
+    {
+        DisableAllControls();
     }
 
     private void PlayerDeath(object sender, EventArgs e)
@@ -224,6 +236,13 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
     }
     private void EnableAllControls()
     {
+        if (Attacked)
+        {
+            Punch.Enable();
+            Kick.Enable();
+            return;
+        }
+
         LeftArm.Enable();
         RightArm.Enable();
         TurnLeft.Enable();
@@ -604,6 +623,9 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
         _healthComponent.OnPlayerDeath -= PlayerDeath;
         LevelMessanger.LevelExitCompleted -= EndLevel;
         LevelMessanger.LevelStart -= LevelReady;
+
+        PauseMenu.OnPause -= OnPause;
+        PauseMenu.OnResume -= OnResum;
     }
 
     public void SetWeapon(Weapon w)
@@ -766,7 +788,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
         OnAttackRelease?.Invoke(this, EventArgs.Empty);
         OnReleased?.Invoke(this, EventArgs.Empty);
         OnVulRelease?.Invoke(this, EventArgs.Empty);
-        EnableAllControls();
         Attacked = false;
+        EnableAllControls();
     }
 }
