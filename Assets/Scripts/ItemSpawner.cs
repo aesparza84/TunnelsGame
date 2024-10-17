@@ -26,9 +26,20 @@ public class ItemSpawner : MonoBehaviour
         LevelMessanger.MapReady += Updatemap;
     }
 
+    private void Start()
+    {
+        LevelMessanger.DifficultyIncrease += DifficultSpawnCap;
+    }
+
+    private void DifficultSpawnCap(object sender, System.EventArgs e)
+    {
+        MaxAllowdWeapons = 2;
+    }
+
     private void OnDisable()
     {
         LevelMessanger.MapReady -= Updatemap;
+        LevelMessanger.DifficultyIncrease -= DifficultSpawnCap;
     }
 
     private void Updatemap(object sender, System.EventArgs e)

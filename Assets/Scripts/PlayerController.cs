@@ -54,6 +54,10 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
     [SerializeField] private float SoundCoolDownRate;
     private float CurrentSoundRadius;
 
+    [Header("Vulnerable Attacked cooldown")]
+    [SerializeField] private float VictimTimer;
+    private float VictimCooldown;
+
     [Header("Retaliate Cooldown")]
     [SerializeField] private float AttackCoolDown;
     private float currentAttackCooldown;
@@ -179,6 +183,8 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
         EnableAllControls();
         _activeState = ActiveState.ACTIVE;
         CurrentMoveSpeed = RegularMoveSpeed;
+
+        VictimCooldown = VictimTimer;
     }
 
     public void DisableComponent()
@@ -505,6 +511,11 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
                 HandleRotation();
                 HandleMovement();
             }
+
+            if (VictimCooldown < VictimTimer)
+            {
+                VictimCooldown += Time.deltaTime;
+            }
         }
     }
     
@@ -749,6 +760,11 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
         yield return null;
     }
 
+    public bool CanAttackThis()
+    {
+        return (VictimCooldown >= VictimTimer) && (!Attacked);
+    }
+
 
     public Vector3 GetLookPoint()
     {
@@ -789,6 +805,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
         OnReleased?.Invoke(this, EventArgs.Empty);
         OnVulRelease?.Invoke(this, EventArgs.Empty);
         Attacked = false;
+        VictimCooldown = 0.0f;
         EnableAllControls();
     }
 }

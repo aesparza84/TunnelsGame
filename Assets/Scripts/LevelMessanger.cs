@@ -8,7 +8,6 @@ public class LevelMessanger : MonoBehaviour
     [Header("Camera Transition Component")]
     [SerializeField] private CameraTransitioner _camTransitioner;
 
-
     //Static events to send out
     public static event EventHandler LevelStart;
     public static event EventHandler MapReady;
@@ -20,6 +19,8 @@ public class LevelMessanger : MonoBehaviour
     public static event EventHandler LevelExitCompleted;
 
     public static event EventHandler GameLoopStopped;
+
+    public static event EventHandler DifficultyIncrease;
 
     private void Awake()
     {
@@ -34,6 +35,12 @@ public class LevelMessanger : MonoBehaviour
         PathGenDFS.OnNewMapGenerated += MapCompleted;
         MapManeuver.PlayerReset += PlayerPosReset;
         PlayerController.OnDeath += StopGameLoop;
+        ScoreKeepr.DifficultyIncrease += DifficultyMapSettings;
+    }
+
+    private void DifficultyMapSettings(object sender, EventArgs e)
+    {
+        DifficultyIncrease?.Invoke(this, EventArgs.Empty);
     }
 
     private void StopGameLoop(object sender, EventArgs e)
@@ -78,6 +85,7 @@ public class LevelMessanger : MonoBehaviour
         LevelStart?.Invoke(this, EventArgs.Empty);
     }
 
+
     private void OnDisable()
     {
         _camTransitioner.OnEntranceTransitionFinished += OnEntranaceCamFinished;
@@ -87,5 +95,6 @@ public class LevelMessanger : MonoBehaviour
         PathGenDFS.OnNewMapGenerated -= MapCompleted;
         MapManeuver.PlayerReset -= PlayerPosReset;
         PlayerController.OnDeath -= StopGameLoop;
+        ScoreKeepr.DifficultyIncrease -= DifficultyMapSettings;
     }
 }

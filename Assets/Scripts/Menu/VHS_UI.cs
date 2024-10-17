@@ -25,6 +25,19 @@ public class VHS_UI : MonoBehaviour
     private void Start()
     {
         LevelMessanger.LevelStart += BeginTimer;
+
+        PauseMenu.OnPause += OnPause;
+        PauseMenu.OnResume += OnResume;
+    }
+
+    private void OnResume(object sender, System.EventArgs e)
+    {
+        _playbackText.text = PlayText;
+    }
+
+    private void OnPause(object sender, System.EventArgs e)
+    {
+        _playbackText.text = PauseText;
     }
 
     private void BeginTimer(object sender, System.EventArgs e)
@@ -61,5 +74,8 @@ public class VHS_UI : MonoBehaviour
     private void OnDisable()
     {
         LevelMessanger.LevelStart -= BeginTimer;
+        PauseMenu.OnPause += OnPause;
+        PauseMenu.OnResume += OnResume;
     }
+
 }

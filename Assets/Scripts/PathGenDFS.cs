@@ -141,8 +141,14 @@ public class PathGenDFS : MonoBehaviour
         //Static subscription
         LevelMessanger.LevelExitCompleted += GenerateNewLevel;
         CheeseItem.CheesePickedUp += ActivateExit;
+        LevelMessanger.DifficultyIncrease += MakeMapHarder;
 
         OnNewMapGenerated?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void MakeMapHarder(object sender, EventArgs e)
+    {
+        AllowedHidingSpots = 4;
     }
 
     private void ActivateExit(object sender, EventArgs e)
@@ -172,6 +178,7 @@ public class PathGenDFS : MonoBehaviour
     {
         LevelMessanger.LevelExitCompleted -= GenerateNewLevel;
         CheeseItem.CheesePickedUp -= ActivateExit;
+        LevelMessanger.DifficultyIncrease -= MakeMapHarder;
     }
 
     private void ResetMap()

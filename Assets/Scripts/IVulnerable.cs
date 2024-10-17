@@ -10,5 +10,6 @@ public interface IVulnerable
     public void Attack(Vector3 p, int time);
     public void Release();
     public void Retaliate(bool inFront, ref Weapon w);
+    public bool CanAttackThis();
     public Vector3 GetLookPoint();
 }

@@ -7,6 +7,7 @@ public class DialogueUI : MonoBehaviour
 {
     [Header("Dialogue TextMeshPro")]
     [SerializeField] private TextMeshProUGUI _DialogueText;
+    [SerializeField] private GameObject _WorldDialogueText;
 
     [Header("Dialogue Stuff")]
     [SerializeField] private string[] NeedCheeseDial;
@@ -18,6 +19,12 @@ public class DialogueUI : MonoBehaviour
         AdjustRoom.ExitNoCheese += OnNoCheeseExit;
         CheeseItem.CheesePickedUp += OnCheesePickedUp;
         PlayerController.OnAttackStatic += OnAttackDialogue;
+        LevelMessanger.DifficultyIncrease += DifficultyNotify;
+    }
+
+    private void DifficultyNotify(object sender, System.EventArgs e)
+    {
+        StartCoroutine(ActivateDeactivateText(_WorldDialogueText));
     }
 
     private void OnAttackDialogue(object sender, System.EventArgs e)
@@ -53,10 +60,19 @@ public class DialogueUI : MonoBehaviour
         yield return null;
     }
 
+    private IEnumerator ActivateDeactivateText(GameObject g)
+    {
+        g.SetActive(true);
+        yield return new WaitForSeconds(3);
+        g.SetActive(false);
+
+        yield return null;
+    }
     private void OnDisable()
     {
         AdjustRoom.ExitNoCheese -= OnNoCheeseExit;
         CheeseItem.CheesePickedUp -= OnCheesePickedUp;
         PlayerController.OnAttackStatic -= OnAttackDialogue;
+        LevelMessanger.DifficultyIncrease -= DifficultyNotify;
     }
 }

@@ -15,6 +15,7 @@ public class VHSSwitcher : MonoBehaviour
     [SerializeField] private VHSSO EntranceExitVHSSettings;
     [SerializeField] private VHSSO DeathVHSSettings;
     [SerializeField] private VHSSO GameOverVHSSettings;
+    [SerializeField] private VHSSO EvilTransitionSettings;
     [SerializeField] private float LerpSpeed;
     [SerializeField] private float TargetRegularWeight;
 
@@ -33,6 +34,7 @@ public class VHSSwitcher : MonoBehaviour
     private bool SwitchVHS;
 
     private bool ActiveComponent;
+    private bool EvilTransition;
 
     [Header("Setting Lerp Speed")]
     [SerializeField] private float SettingSwitchSpeed;
@@ -60,9 +62,16 @@ public class VHSSwitcher : MonoBehaviour
         LevelMessanger.LevelFinished += OnExitTransition;
         LevelMessanger.LevelStart += OnEntranceTransition;
         LevelMessanger.GameLoopStopped += SwitchToDeathVHS;
+        LevelMessanger.DifficultyIncrease += DiffictultyVisualUpdate;
         RatKillEvent.KilledAnimFinished += SwitchToGameOverVHS;
 
-        ConfigureNewVHSSettings(MaxVHSSettings);
+        InstantSwitchSettings(EntranceExitVHSSettings);
+
+    }
+
+    private void DiffictultyVisualUpdate(object sender, System.EventArgs e)
+    {
+        EvilTransition = true;
     }
 
     private void SwitchToGameOverVHS(object sender, System.EventArgs e)
@@ -117,7 +126,15 @@ public class VHSSwitcher : MonoBehaviour
         ActiveComponent = false;
 
         _vhsPostProcess._weight.value = 0.0f;
-        ConfigureNewVHSSettings(EntranceExitVHSSettings);
+
+        if (EvilTransition)
+        {
+            ConfigureNewVHSSettings(EvilTransitionSettings);
+        }
+        else
+        {
+            ConfigureNewVHSSettings(EntranceExitVHSSettings);
+        }
 
         currentVHSWeight = _vhsPostProcess._weight.value;
         while (currentVHSWeight < 1)
@@ -251,6 +268,7 @@ public class VHSSwitcher : MonoBehaviour
         LevelMessanger.LevelFinished -= OnExitTransition;
         LevelMessanger.LevelStart -= OnEntranceTransition;
         LevelMessanger.GameLoopStopped -= SwitchToDeathVHS;
+        LevelMessanger.DifficultyIncrease -= DiffictultyVisualUpdate;
         RatKillEvent.KilledAnimFinished -= SwitchToGameOverVHS;
     }
 }

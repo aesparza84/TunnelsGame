@@ -300,6 +300,11 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
             {
                 if (other.TryGetComponent<IVulnerable>(out IVulnerable vul))
                 {
+                    if (!vul.CanAttackThis())
+                    {
+                        return;
+                    }
+
                     if (_enemyState != EnemyState.ATTACKING)
                     {
                         
