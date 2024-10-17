@@ -91,7 +91,7 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
     private void Start()
     {
         _audioSource = GetComponent<AudioSource>();
-        _audioSource.Stop();
+        //_audioSource.Stop();
 
         //Invoke new init event
         OnEnemyInit?.Invoke(this, this);
@@ -230,7 +230,7 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
         {
             if (!_audioSource.isPlaying)
             {
-                CreateAudioRequest(0);
+                //CreateAudioRequest(0);
             }
         }
         
