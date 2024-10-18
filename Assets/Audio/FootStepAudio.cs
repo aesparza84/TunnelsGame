@@ -13,6 +13,8 @@ public class FootStepAudio : MonoBehaviour
     private int choice;
     private void Start()
     {
+        _audioSource.ignoreListenerPause = false;
+
         _FootStep.OnFootStep += PlayFootStep;
 
         ConfigureSource(_CrawlSounds[0]);

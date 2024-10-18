@@ -131,6 +131,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
         currentArm = Side.LEFT;
         Visible = true;
 
+
         TargetRotation = transform.localRotation.eulerAngles;
 
         CompassDirection(Vector3.Dot(transform.forward, Vector3.forward));

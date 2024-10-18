@@ -94,7 +94,10 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
 
     private void Start()
     {
+        AppFocused = true;
+
         _audioSource = GetComponent<AudioSource>();
+        _audioSource.ignoreListenerPause = false;
         //_audioSource.Stop();
 
         //Invoke new init event
@@ -113,7 +116,8 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
     
     private void OnLevelStart(object sender, System.EventArgs e)
     {
-        Instantiate(RockAudioPrefab, transform);
+        GameObject rock = Instantiate(RockAudioPrefab, transform);
+        rock.GetComponent<AudioSource>().ignoreListenerPause = false;
 
         //Disable enemy behavior
         _pathFinder.WarmStartPosition();

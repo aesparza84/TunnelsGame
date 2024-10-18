@@ -307,6 +307,54 @@
                     "isPartOfComposite": false
                 }
             ]
+        },
+        {
+            "name": "MainMenu",
+            "id": "89a73db5-27fe-4b0e-8d35-a3d9cf7af88c",
+            "actions": [
+                {
+                    "name": "StartMenu",
+                    "type": "Button",
+                    "id": "6dda010d-4245-4bce-8744-d475fd04c427",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "BackPage",
+                    "type": "Button",
+                    "id": "a5d69c2c-2c32-4eda-b27d-b7202ec9e97d",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "90f248cc-4bfb-43d8-8ec6-5d90c85b1c6a",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "StartMenu",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "13927d76-0d6d-4cc9-bf50-11566dc52dc2",
+                    "path": "<Keyboard>/escape",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "BackPage",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
         }
     ],
     "controlSchemes": []

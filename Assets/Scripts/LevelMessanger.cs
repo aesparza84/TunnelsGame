@@ -26,8 +26,6 @@ public class LevelMessanger : MonoBehaviour
 
     private void Awake()
     {
-        Application.targetFrameRate = 240;
-
         //Camera transition events
         _camTransitioner.OnEntranceTransitionFinished += OnEntranaceCamFinished;
         _camTransitioner.OnExitTransitionFinished += OnExitCamFinished;

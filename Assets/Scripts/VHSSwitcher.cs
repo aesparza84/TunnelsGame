@@ -250,7 +250,7 @@ public class VHSSwitcher : MonoBehaviour
             if (lowestDist <= PointBlank_Distance)
             {
                 //EnterVHS_State(VHS_SETTING.POINTBLANK);
-                UpdateVHSSettings(lowestDist, PointBlank_Distance, PointBlank_VHS);
+                UpdateVHSSettings(lowestDist, 0.1f, PointBlank_VHS);
 
             }
             else if (lowestDist <= Near_Distance)

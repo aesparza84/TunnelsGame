@@ -329,6 +329,54 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": false
                 }
             ]
+        },
+        {
+            ""name"": ""MainMenu"",
+            ""id"": ""89a73db5-27fe-4b0e-8d35-a3d9cf7af88c"",
+            ""actions"": [
+                {
+                    ""name"": ""StartMenu"",
+                    ""type"": ""Button"",
+                    ""id"": ""6dda010d-4245-4bce-8744-d475fd04c427"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""BackPage"",
+                    ""type"": ""Button"",
+                    ""id"": ""a5d69c2c-2c32-4eda-b27d-b7202ec9e97d"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""90f248cc-4bfb-43d8-8ec6-5d90c85b1c6a"",
+                    ""path"": ""<Keyboard>/space"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""StartMenu"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""13927d76-0d6d-4cc9-bf50-11566dc52dc2"",
+                    ""path"": ""<Keyboard>/escape"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""BackPage"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
         }
     ],
     ""controlSchemes"": []
@@ -351,6 +399,10 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         m_Menu_MoveUp = m_Menu.FindAction("MoveUp", throwIfNotFound: true);
         m_Menu_MoveDown = m_Menu.FindAction("MoveDown", throwIfNotFound: true);
         m_Menu_ConfirmChoice = m_Menu.FindAction("ConfirmChoice", throwIfNotFound: true);
+        // MainMenu
+        m_MainMenu = asset.FindActionMap("MainMenu", throwIfNotFound: true);
+        m_MainMenu_StartMenu = m_MainMenu.FindAction("StartMenu", throwIfNotFound: true);
+        m_MainMenu_BackPage = m_MainMenu.FindAction("BackPage", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -596,6 +648,60 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         }
     }
     public MenuActions @Menu => new MenuActions(this);
+
+    // MainMenu
+    private readonly InputActionMap m_MainMenu;
+    private List<IMainMenuActions> m_MainMenuActionsCallbackInterfaces = new List<IMainMenuActions>();
+    private readonly InputAction m_MainMenu_StartMenu;
+    private readonly InputAction m_MainMenu_BackPage;
+    public struct MainMenuActions
+    {
+        private @PlayerControls m_Wrapper;
+        public MainMenuActions(@PlayerControls wrapper) { m_Wrapper = wrapper; }
+        public InputAction @StartMenu => m_Wrapper.m_MainMenu_StartMenu;
+        public InputAction @BackPage => m_Wrapper.m_MainMenu_BackPage;
+        public InputActionMap Get() { return m_Wrapper.m_MainMenu; }
+        public void Enable() { Get().Enable(); }
+        public void Disable() { Get().Disable(); }
+        public bool enabled => Get().enabled;
+        public static implicit operator InputActionMap(MainMenuActions set) { return set.Get(); }
+        public void AddCallbacks(IMainMenuActions instance)
+        {
+            if (instance == null || m_Wrapper.m_MainMenuActionsCallbackInterfaces.Contains(instance)) return;
+            m_Wrapper.m_MainMenuActionsCallbackInterfaces.Add(instance);
+            @StartMenu.started += instance.OnStartMenu;
+            @StartMenu.performed += instance.OnStartMenu;
+            @StartMenu.canceled += instance.OnStartMenu;
+            @BackPage.started += instance.OnBackPage;
+            @BackPage.performed += instance.OnBackPage;
+            @BackPage.canceled += instance.OnBackPage;
+        }
+
+        private void UnregisterCallbacks(IMainMenuActions instance)
+        {
+            @StartMenu.started -= instance.OnStartMenu;
+            @StartMenu.performed -= instance.OnStartMenu;
+            @StartMenu.canceled -= instance.OnStartMenu;
+            @BackPage.started -= instance.OnBackPage;
+            @BackPage.performed -= instance.OnBackPage;
+            @BackPage.canceled -= instance.OnBackPage;
+        }
+
+        public void RemoveCallbacks(IMainMenuActions instance)
+        {
+            if (m_Wrapper.m_MainMenuActionsCallbackInterfaces.Remove(instance))
+                UnregisterCallbacks(instance);
+        }
+
+        public void SetCallbacks(IMainMenuActions instance)
+        {
+            foreach (var item in m_Wrapper.m_MainMenuActionsCallbackInterfaces)
+                UnregisterCallbacks(item);
+            m_Wrapper.m_MainMenuActionsCallbackInterfaces.Clear();
+            AddCallbacks(instance);
+        }
+    }
+    public MainMenuActions @MainMenu => new MainMenuActions(this);
     public interface ICrawlActions
     {
         void OnLeftArm(InputAction.CallbackContext context);
@@ -615,5 +721,10 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         void OnMoveUp(InputAction.CallbackContext context);
         void OnMoveDown(InputAction.CallbackContext context);
         void OnConfirmChoice(InputAction.CallbackContext context);
+    }
+    public interface IMainMenuActions
+    {
+        void OnStartMenu(InputAction.CallbackContext context);
+        void OnBackPage(InputAction.CallbackContext context);
     }
 }
