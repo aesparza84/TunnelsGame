@@ -8,22 +8,54 @@ public class ScoreKeepr : MonoBehaviour
     [Header("Increase difficulty after 'x' levels complete")]
     [SerializeField] private int DificultyLevelThreshold;
 
-    [Header("Hard reference to 2nd enemy")]
-    [SerializeField] private GameObject SecondEnemy;
-
     private int CurrentScore;
     private int HighestScore;
+
+    private CurrentRuntTime BestTime;
+    private CurrentRuntTime CurrentTime;
 
     public static event EventHandler DifficultyIncrease;
     private void Start()
     {
         HighestScore = -1;
 
-        SecondEnemy.SetActive(false);
-
         LevelMessanger.MapReady += NextLevel;
         LevelMessanger.LevelExitCompleted += IncreaseScore;
+        VHS_UI.SendTime += OnRetrieveTime;
         PlayerController.OnDeath += OnPlayerDeath;
+    }
+
+    private void OnRetrieveTime(object sender, CurrentRuntTime e)
+    {
+        CurrentTime = e;
+
+        if (BestTime != null)
+        {
+            if (CurrentTimeisLower())
+            {
+                BestTime = CurrentTime;
+            }
+        }
+        else
+        {
+            BestTime = CurrentTime;
+        }
+    }
+
+    private bool CurrentTimeisLower()
+    {
+        if (CurrentTime.minutes <= BestTime.minutes)
+        {
+            if (CurrentTime.seconds <= BestTime.seconds)
+            {
+                if (CurrentTime.miliseconds < BestTime.seconds)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private void IncreaseScore(object sender, EventArgs e)
@@ -42,7 +74,6 @@ public class ScoreKeepr : MonoBehaviour
     {
         if (CurrentScore > DificultyLevelThreshold)
         {
-            SecondEnemy.SetActive(true);
             DifficultyIncrease?.Invoke(this, EventArgs.Empty);
         }
     }
@@ -50,6 +81,8 @@ public class ScoreKeepr : MonoBehaviour
     private void OnDisable()
     {
         LevelMessanger.MapReady -= NextLevel;
+        LevelMessanger.LevelExitCompleted -= IncreaseScore;
+        VHS_UI.SendTime -= OnRetrieveTime;
         PlayerController.OnDeath -= OnPlayerDeath;
     }
 }

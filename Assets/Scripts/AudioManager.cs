@@ -8,12 +8,17 @@ public class AudioManager : MonoBehaviour
     [Header("Game Sounds")]
     [SerializeField] private Sound _RatGrowlLoop;
     [SerializeField] private Sound _RatAttackSound;
+    [SerializeField] private Sound _RockSound;
 
+    //This audio suorce to send out
+    private AudioSource _audioSource;
 
     private void Start()
     {
+        _audioSource = GetComponent<AudioSource>();
         EnemyBehavior.OnAudioRequest += EnemyAudioRequest;
-    }    
+    }
+
     private void EnemyAudioRequest(object sender, Tuple<AudioSource, byte> e)
     {
 

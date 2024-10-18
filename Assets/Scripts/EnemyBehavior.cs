@@ -15,6 +15,8 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
 
     [SerializeField] private Vector2 newPos;
 
+    [SerializeField] private float SpawnDelay;
+
     [Header("Move State Speeds")]
     [SerializeField] private float LurkSpeed;
     [SerializeField] private float HuntSpeed;
@@ -41,7 +43,8 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
     [SerializeField] private int EncounterTime;
 
     //AudioSource component
-    private AudioSource _audioSource;
+    [SerializeField] private AudioSource _audioSource;
+    [SerializeField] private GameObject RockAudioPrefab;
 
     [SerializeField] private ParticleSystem _biteParticles;
 
@@ -72,6 +75,7 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
 
     //Audio Request
     public static event EventHandler< Tuple<AudioSource, byte> > OnAudioRequest;
+    public static event EventHandler<AudioSource> OnEnrtanceAdio;
 
     private bool AppFocused;
 
@@ -106,8 +110,11 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
         _activeState = ActiveState.DISABLED;
     }    
 
+    
     private void OnLevelStart(object sender, System.EventArgs e)
     {
+        Instantiate(RockAudioPrefab, transform);
+
         //Disable enemy behavior
         _pathFinder.WarmStartPosition();
         IntroDirtParticles.Play();
@@ -116,7 +123,7 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
         Vector3 p = transform.position;
         p.y += 1;
         transform.position = p;
-        Invoke("ActivateComponent", 5);
+        Invoke("ActivateComponent", SpawnDelay);
     }
 
     private void OnLevelFinished(object sender, System.EventArgs e)
@@ -230,7 +237,7 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
         {
             if (!_audioSource.isPlaying)
             {
-                //CreateAudioRequest(0);
+                CreateAudioRequest(0);
             }
         }
         

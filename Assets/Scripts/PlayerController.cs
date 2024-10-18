@@ -37,6 +37,9 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
     private float CurrentMoveSpeed;
     private Vector3 TargetPos;
 
+    [Header("FootStep")]
+    [SerializeField] private FootStep _foot;
+
     [Header("Flashlight")]
     [SerializeField] private Light _flashLight;
 
@@ -81,6 +84,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
     public event EventHandler OnMapCheck;
     public event EventHandler OnMapClose;
     public event EventHandler<Side> OnPlayerMoved;
+
     private int currentEncounterTime;
 
     //Misc. events
@@ -97,6 +101,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
 
     //Move event
     public event EventHandler<Tuple<OpeningSide, Side>> OnMove; //Facing-Dir, Arm side
+
     [SerializeField] private bool MapMove;
 
 
@@ -371,6 +376,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
                     CurrentMapPoint = newPoint;
                     MakeNoise(CrawlSoundRadius);
                     OnPlayerMoved?.Invoke(this, currentArm);
+                    _foot.TriggerFootStep();
 
                     return true;
                 }
@@ -386,6 +392,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
                     CurrentMapPoint = newPoint;
                     MakeNoise(CrawlSoundRadius);
                     OnPlayerMoved?.Invoke(this, currentArm);
+                    _foot.TriggerFootStep();
 
                     return true;
                 }
@@ -435,6 +442,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
 
                     Moving = true;
                     MakeNoise(CrawlSoundRadius);
+
 
                     return true;
                 }

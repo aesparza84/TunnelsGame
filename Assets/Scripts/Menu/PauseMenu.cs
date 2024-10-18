@@ -18,6 +18,7 @@ public class PauseMenu : MonoBehaviour
     //Menu inputs
     private InputAction _pause;
     private bool IsPaused;
+    private bool DeathMode;
 
     public static event EventHandler OnPause;
     public static event EventHandler OnResume;
@@ -27,6 +28,15 @@ public class PauseMenu : MonoBehaviour
         LevelMessanger.PlayerReset += GameReset;
         LevelMessanger.LevelStart += AllowMenu;
         LevelMessanger.LevelFinished += DisableMenu;
+        RatKillEvent.KilledAnimFinished += DeathMenu;
+    }
+
+    private void DeathMenu(object sender, EventArgs e)
+    {
+        DeathMode = true;
+        _pause.Disable();
+        MenuButtonsObj.SetActive(true);
+        EventSystem.current.SetSelectedGameObject(DefaultOption);
     }
 
     private void AllowMenu(object sender, System.EventArgs e)
@@ -48,6 +58,10 @@ public class PauseMenu : MonoBehaviour
 
     private void GameReset(object sender, System.EventArgs e)
     {
+        if (DeathMode)
+        {
+            DeathMode = false;
+        }
         Time.timeScale = 1.0f;
     }
     private void DisableMenu(object sender, System.EventArgs e)
@@ -78,6 +92,11 @@ public class PauseMenu : MonoBehaviour
 
     public void ResumeGame()
     {
+        if (DeathMode)
+        {
+            return;
+        }
+
         OnResume?.Invoke(this, EventArgs.Empty);
         Time.timeScale = 1.0f;
         MenuButtonsObj.SetActive(false);
@@ -103,5 +122,7 @@ public class PauseMenu : MonoBehaviour
 
         LevelMessanger.LevelStart -= GameReset;
         LevelMessanger.LevelFinished -= DisableMenu;
+        RatKillEvent.KilledAnimFinished -= AllowMenu;
+        RatKillEvent.KilledAnimFinished -= DeathMenu;
     }
 }

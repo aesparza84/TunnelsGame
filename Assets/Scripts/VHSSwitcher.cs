@@ -29,6 +29,7 @@ public class VHSSwitcher : MonoBehaviour
     [SerializeField] private bool UsingSound;
     [SerializeField] private Sound GlitchSound;
     [SerializeField] private Sound DeathGlitchSound;
+    [SerializeField] private float MaxAudioDistance;
     private float currentVol;
     private AudioSource _audioSource;
 
@@ -81,6 +82,7 @@ public class VHSSwitcher : MonoBehaviour
 
         LevelMessanger.LevelFinished += OnExitTransition;
         LevelMessanger.LevelStart += OnEntranceTransition;
+        LevelMessanger.PlayerReset += IntroSound; 
         LevelMessanger.GameLoopStopped += SwitchToDeathVHS;
         LevelMessanger.DifficultyIncrease += DiffictultyVisualUpdate;
         RatKillEvent.KilledAnimFinished += SwitchToGameOverVHS;
@@ -88,6 +90,12 @@ public class VHSSwitcher : MonoBehaviour
 
         InstantSwitchSettings(EntranceExitVHSSettings);
 
+    }
+
+    private void IntroSound(object sender, System.EventArgs e)
+    {
+        ChangeSound(GlitchSound);
+        _audioSource.volume = 1;
     }
 
     private void HealVisuals(object sender, System.EventArgs e)
@@ -110,12 +118,13 @@ public class VHSSwitcher : MonoBehaviour
     private void SwitchToDeathVHS(object sender, System.EventArgs e)
     {
         ActiveComponent = false;
+        _audioSource.volume = 1;
+        ChangeSound(DeathGlitchSound);
         InstantSwitchSettings(DeathVHSSettings);
     }
 
     private void OnEntranceTransition(object sender, System.EventArgs e)
     {
-        ChangeSound(GlitchSound);
         StopCoroutine(VHS_Exit());
         StartCoroutine(VHS_Entrance());
     }
@@ -134,6 +143,7 @@ public class VHSSwitcher : MonoBehaviour
         {
             currentVHSWeight = Mathf.MoveTowards(currentVHSWeight, 0, LerpSpeed * Time.deltaTime);
             _vhsPostProcess._weight.value = currentVHSWeight;
+            _audioSource.volume = currentVHSWeight;
             yield return null;
         }
 
@@ -157,9 +167,14 @@ public class VHSSwitcher : MonoBehaviour
 
         _vhsPostProcess._weight.value = 0.0f;
 
+        //Set vol to 0
+        _audioSource.volume = 0;
+
         if (EvilTransition)
         {
             ConfigureNewVHSSettings(EvilTransitionSettings);
+            _audioSource.volume = 1;
+            ChangeSound(DeathGlitchSound);
         }
         else
         {
@@ -170,6 +185,7 @@ public class VHSSwitcher : MonoBehaviour
         while (currentVHSWeight < 1)
         {
             currentVHSWeight = Mathf.MoveTowards(currentVHSWeight, 1, LerpSpeed * Time.deltaTime);
+            _audioSource.volume = Mathf.Lerp(_audioSource.volume, 1, LerpSpeed *Time.deltaTime);
             _vhsPostProcess._weight.value = currentVHSWeight;
             yield return null;
         }
@@ -313,7 +329,7 @@ public class VHSSwitcher : MonoBehaviour
     private void SetGlitchSound(float distance)
     {
         //PointBlank_Distance = 2
-        currentVol = Mathf.InverseLerp(PointBlank_Distance, Far_VHS, distance);
+        currentVol = Mathf.InverseLerp(MaxAudioDistance, PointBlank_Distance, distance);
         currentVol = Mathf.Clamp(currentVol, 0, 1);
         _audioSource.volume = currentVol;
     }
@@ -342,6 +358,7 @@ public class VHSSwitcher : MonoBehaviour
     {
         LevelMessanger.LevelFinished -= OnExitTransition;
         LevelMessanger.LevelStart -= OnEntranceTransition;
+        LevelMessanger.PlayerReset -= IntroSound;
         LevelMessanger.GameLoopStopped -= SwitchToDeathVHS;
         LevelMessanger.DifficultyIncrease -= DiffictultyVisualUpdate;
         RatKillEvent.KilledAnimFinished -= SwitchToGameOverVHS;

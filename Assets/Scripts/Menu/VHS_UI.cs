@@ -1,8 +1,22 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
+public class CurrentRuntTime
+{
+    public int minutes {  get; private set; }
+    public int seconds { get; private set; }
+    public int miliseconds {  get; private set; }
+
+    public CurrentRuntTime(int min, int sec, int mili)
+    {
+        minutes = min; 
+        seconds = sec;
+        miliseconds = mili;
+    }
+}
 public class VHS_UI : MonoBehaviour
 {
     [Header("Text")]
@@ -22,12 +36,21 @@ public class VHS_UI : MonoBehaviour
     private float totalTime;
     private bool TickTime;
 
+    public static event EventHandler<CurrentRuntTime> SendTime;
     private void Start()
     {
         LevelMessanger.LevelStart += BeginTimer;
+        LevelMessanger.GameLoopStopped += StopTimer;
 
         PauseMenu.OnPause += OnPause;
         PauseMenu.OnResume += OnResume;
+    }
+
+    private void StopTimer(object sender, System.EventArgs e)
+    {
+        TickTime = false;
+        CurrentRuntTime recentTime = new CurrentRuntTime(minutes, seconds, mililseconds);
+        SendTime?.Invoke(this, recentTime);
     }
 
     private void OnResume(object sender, System.EventArgs e)
@@ -74,8 +97,9 @@ public class VHS_UI : MonoBehaviour
     private void OnDisable()
     {
         LevelMessanger.LevelStart -= BeginTimer;
-        PauseMenu.OnPause += OnPause;
-        PauseMenu.OnResume += OnResume;
+        LevelMessanger.GameLoopStopped -= StopTimer;
+        PauseMenu.OnPause -= OnPause;
+        PauseMenu.OnResume -= OnResume;
     }
 
 }

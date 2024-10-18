@@ -67,6 +67,8 @@ public class PathFinder : MonoBehaviour, IPathFinder, ICompActivate
     private float currentCooldown;
     private Vector3 NextDir;
 
+    [Header("Foot Step")]
+    [SerializeField] private FootStep _foot;
 
     //Path state properties
     public bool Traverse { get; private set; }
@@ -105,6 +107,11 @@ public class PathFinder : MonoBehaviour, IPathFinder, ICompActivate
         //Start DISABLED
         DisableComponent();
 
+    }
+
+    public void SetPathGen(PathGenDFS p)
+    {
+        _pathGenerator = p;
     }
 
     //Get Updated copy of the maze Map
@@ -445,12 +452,14 @@ public class PathFinder : MonoBehaviour, IPathFinder, ICompActivate
                 }
                 else
                 {
+
                     if (currentCooldown < MoveCoolDown)
                     {
                         currentCooldown += Time.deltaTime;
                     }
                     else
                     {
+                        _foot.TriggerFootStep();
                         Moving = false;
                     }
 
