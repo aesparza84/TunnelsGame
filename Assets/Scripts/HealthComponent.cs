@@ -14,8 +14,10 @@ public class HealthComponent : MonoBehaviour, IHealth
     public event EventHandler OnPlayerDeath;
     public static event EventHandler OnHeal;
 
+    private bool Dead;
     private void Start()
     {
+        Dead = false;
         Health = _MaxHealth;
     }
 
@@ -42,6 +44,10 @@ public class HealthComponent : MonoBehaviour, IHealth
 
     public void Die()
     {
-        OnPlayerDeath?.Invoke(this, EventArgs.Empty);
+        if (!Dead)
+        {
+            OnPlayerDeath?.Invoke(this, EventArgs.Empty);
+            Dead = true;
+        }
     }
 }

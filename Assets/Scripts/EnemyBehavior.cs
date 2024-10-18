@@ -75,6 +75,8 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
 
     //Audio Request
     public static event EventHandler< Tuple<AudioSource, byte> > OnAudioRequest;
+    public static event EventHandler<Vector3> OnHeardPlayer;
+    public static event EventHandler<Vector3> OnDeAggro;
     public static event EventHandler<AudioSource> OnEnrtanceAdio;
 
     private bool AppFocused;
@@ -244,6 +246,14 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
                 CreateAudioRequest(0);
             }
         }
+        else
+        {
+            if (!_audioSource.isPlaying)
+            {
+                CreateAudioRequest(1);
+            }
+
+        }
         
     }
 
@@ -285,6 +295,7 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
 
             if (_enemyState != EnemyState.HUNTING)
             {
+                OnHeardPlayer?.Invoke(this, transform.position);
                 EnterState(EnemyState.HUNTING);
             }
 
@@ -299,6 +310,11 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
     }
     private void EnterState(EnemyState _state)
     {
+        if (_enemyState == EnemyState.ATTACKING)
+        {
+            _audioSource.Stop();
+        }
+
         _enemyState = _state;
 
         switch (_state)
@@ -316,6 +332,8 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
                 break;
             case EnemyState.ATTACKING:
                 _pathFinder.StopTraverse();
+                _pathFinder.StopAllCoroutines();
+                _audioSource.Stop();
                 OnAttack?.Invoke(this, EventArgs.Empty);
 
                 break;
@@ -324,7 +342,7 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
                 _pathFinder.SetSpeed(HuntSpeed);
                 _pathFinder.SetCoolDown(RunCooldown);
                 OnRoamFromAttack?.Invoke(this, EventArgs.Empty);
-
+                OnDeAggro?.Invoke(this, transform.position);
 
                 break;
             case EnemyState.LINGERING:
@@ -397,6 +415,8 @@ public class EnemyBehavior : MonoBehaviour, IEars, ICompActivate
     }
     private void OnRelease(object sender, System.EventArgs e)
     {
+        OnDeAggro?.Invoke(this, transform.position);
+
         if (sender is IVulnerable vul)
         {
             vul.OnVulRelease -= OnRelease;

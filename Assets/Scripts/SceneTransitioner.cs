@@ -28,8 +28,16 @@ public class SceneTransitioner : MonoBehaviour
         MainMenu.OnMainGameEnter += OnLoadGameScene;
 
         SceneManager.activeSceneChanged += OnSceneChanged;
+
+        PauseMenu.OnLeaveGame += ReturnToMain;
         DontDestroyOnLoad(gameObject);
     }
+
+    private void ReturnToMain(object sender, System.EventArgs e)
+    {
+        CallMainMenu();
+    }
+
     private void OnSceneChanged(Scene arg0, Scene arg1)
     {
         if (SceneManager.GetActiveScene().buildIndex == 1)
@@ -102,5 +110,6 @@ public class SceneTransitioner : MonoBehaviour
         MainMenu.OnMainGameEnter -= OnLoadGameScene;
 
         SceneManager.activeSceneChanged -= OnSceneChanged;
+        PauseMenu.OnLeaveGame -= ReturnToMain;
     }
 }

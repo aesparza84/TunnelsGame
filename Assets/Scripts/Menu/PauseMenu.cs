@@ -22,6 +22,7 @@ public class PauseMenu : MonoBehaviour
 
     public static event EventHandler OnPause;
     public static event EventHandler OnResume;
+    public static event EventHandler OnLeaveGame;
 
     private void Start()
     {
@@ -112,7 +113,10 @@ public class PauseMenu : MonoBehaviour
     public void ExitToMainMenu()
     {
         //Load Main Menu Scene
+        Time.timeScale = 1;
         SceneManager.LoadScene(0);
+
+        OnLeaveGame?.Invoke(this, EventArgs.Empty);
     }
 
     private void OnDisable()

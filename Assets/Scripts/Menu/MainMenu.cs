@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
@@ -18,6 +19,8 @@ public class MainMenu : MonoBehaviour
     [SerializeField] private GameObject SettingsUIGroup;
 
     public static event EventHandler OnMainGameEnter;
+
+    public UnityEvent OnTvSwithced;
 
     private void Start()
     {
@@ -77,6 +80,7 @@ public class MainMenu : MonoBehaviour
     {
         if (!Activated)
         {
+            OnTvSwithced?.Invoke();
             TopUILayer.SetActive(true);
             Activated = true;
             toggleScreen.Disable();

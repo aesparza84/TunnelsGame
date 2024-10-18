@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class CurrentRuntTime
 {
@@ -27,6 +28,10 @@ public class VHS_UI : MonoBehaviour
     [SerializeField] private string PlayText;
     [SerializeField] private string PauseText;
 
+    [SerializeField] private GameObject DeathStatsObj;
+    [SerializeField] private TextMeshProUGUI FinalTime;
+    [SerializeField] private TextMeshProUGUI FinalCheeseCount;
+
     //values
     private int minutes;
     private int seconds;
@@ -39,18 +44,45 @@ public class VHS_UI : MonoBehaviour
     public static event EventHandler<CurrentRuntTime> SendTime;
     private void Start()
     {
-        LevelMessanger.LevelStart += BeginTimer;
-        LevelMessanger.GameLoopStopped += StopTimer;
+        LevelMessanger.GameLoopStopped += DeathEvents;
 
         PauseMenu.OnPause += OnPause;
         PauseMenu.OnResume += OnResume;
+
+        ScoreKeepr.DeathStats += GetDeathStats;
+
+        SceneManager.activeSceneChanged += ThisSceneInit;
+        SceneManager.sceneLoaded += BeginTimer;
     }
 
-    private void StopTimer(object sender, System.EventArgs e)
+    private void GetDeathStats(object sender, Tuple<CurrentRuntTime, int> e)
+    {
+        FinalCheeseCount.text = $"Cheese collected {e.Item2}";
+    }
+
+    private void ThisSceneInit(Scene arg0, Scene arg1)
+    {
+        ResetValues();
+        DeathStatsObj.SetActive(false);
+
+        ResetValues();
+        TickTime = true;
+    }
+    private void BeginTimer(Scene arg0, LoadSceneMode arg1)
+    {
+        ResetValues();
+        DeathStatsObj.SetActive(false);
+
+        ResetValues();
+        TickTime = true;
+    }
+    private void DeathEvents(object sender, System.EventArgs e)
     {
         TickTime = false;
         CurrentRuntTime recentTime = new CurrentRuntTime(minutes, seconds, mililseconds);
         SendTime?.Invoke(this, recentTime);
+
+        DeathStatsObj.SetActive(true);
     }
 
     private void OnResume(object sender, System.EventArgs e)
@@ -61,12 +93,6 @@ public class VHS_UI : MonoBehaviour
     private void OnPause(object sender, System.EventArgs e)
     {
         _playbackText.text = PauseText;
-    }
-
-    private void BeginTimer(object sender, System.EventArgs e)
-    {
-        ResetValues();
-        TickTime = true;
     }
 
     private void Update()
@@ -96,10 +122,15 @@ public class VHS_UI : MonoBehaviour
 
     private void OnDisable()
     {
-        LevelMessanger.LevelStart -= BeginTimer;
-        LevelMessanger.GameLoopStopped -= StopTimer;
+        LevelMessanger.GameLoopStopped -= DeathEvents;
+
         PauseMenu.OnPause -= OnPause;
         PauseMenu.OnResume -= OnResume;
+
+        ScoreKeepr.DeathStats -= GetDeathStats;
+
+        SceneManager.activeSceneChanged -= ThisSceneInit;
+        SceneManager.sceneLoaded -= BeginTimer;
     }
 
 }

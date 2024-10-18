@@ -14,10 +14,15 @@ public class ScoreKeepr : MonoBehaviour
     private CurrentRuntTime BestTime;
     private CurrentRuntTime CurrentTime;
 
+    private bool difficultyIncreased;
+
     public static event EventHandler DifficultyIncrease;
+
+    public static event EventHandler<Tuple<CurrentRuntTime, int>> DeathStats;
     private void Start()
     {
         HighestScore = -1;
+        difficultyIncreased = false;
 
         LevelMessanger.MapReady += NextLevel;
         LevelMessanger.LevelExitCompleted += IncreaseScore;
@@ -67,6 +72,11 @@ public class ScoreKeepr : MonoBehaviour
 
     private void OnPlayerDeath(object sender, System.EventArgs e)
     {
+        Tuple<CurrentRuntTime, int> d_stats = 
+            new Tuple<CurrentRuntTime, int>(CurrentTime, CurrentScore);
+
+        DeathStats?.Invoke(this, d_stats);
+
         CurrentScore = 0;
     }
 
@@ -74,7 +84,11 @@ public class ScoreKeepr : MonoBehaviour
     {
         if (CurrentScore > DificultyLevelThreshold)
         {
-            DifficultyIncrease?.Invoke(this, EventArgs.Empty);
+            if (!difficultyIncreased)
+            {
+                DifficultyIncrease?.Invoke(this, EventArgs.Empty);
+                difficultyIncreased = true;
+            }
         }
     }
 
