@@ -33,28 +33,27 @@ public class SettingsMenu : MonoBehaviour
     private bool _fullScreen;
     private void Start()
     {
-        availableResoltions = Screen.resolutions;
-        _resolutionMenu.ClearOptions();
+        //availableResoltions = Screen.resolutions;
+        //_resolutionMenu.ClearOptions();
 
-        List<string> options = new List<string>();
-        _resIndex = 0;
+        //List<string> options = new List<string>();
+        //_resIndex = 0;
 
-        for (int i = 0; i < availableResoltions.Length; i++)
-        {
-            string name = $"{availableResoltions[i].width} x {availableResoltions[i].height}";
-            options.Add(name);
+        //for (int i = 0; i < availableResoltions.Length; i++)
+        //{
+        //    string name = $"{availableResoltions[i].width} x {availableResoltions[i].height}";
+        //    options.Add(name);
         
-            if(availableResoltions[i].width == Screen.currentResolution.width && 
-                availableResoltions[i].height == Screen.currentResolution.height)
-            {
-                _resIndex = i;
-            }
-        }
+        //    if(availableResoltions[i].width == Screen.currentResolution.width && 
+        //        availableResoltions[i].height == Screen.currentResolution.height)
+        //    {
+        //        _resIndex = i;
+        //    }
+        //}
 
-        _resolutionMenu.AddOptions(options);
-        _resolutionMenu.value = _resIndex;
-        _resolutionMenu.RefreshShownValue();
-
+        //_resolutionMenu.AddOptions(options);
+        //_resolutionMenu.value = _resIndex;
+        //_resolutionMenu.RefreshShownValue();
         FrameRateText.text = Application.targetFrameRate.ToString();
     }
 
@@ -109,11 +108,12 @@ public class SettingsMenu : MonoBehaviour
     public void ToggleFullScreen(bool isFul)
     {
         _fullScreen = isFul;
+        Screen.SetResolution(Screen.currentResolution.width, Screen.currentResolution.height, _fullScreen);
     }
 
     public void ChangeResolution(int resIndex)
     {
-        Resolution newRes = availableResoltions[_resIndex];
+        Resolution newRes = availableResoltions[resIndex];
         Screen.SetResolution(newRes.width, newRes.height, _fullScreen);
     }
 }

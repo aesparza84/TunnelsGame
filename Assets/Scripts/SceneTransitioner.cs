@@ -13,6 +13,7 @@ public class SceneTransitioner : MonoBehaviour
     public static SceneTransitioner _instance;
 
     private bool GameSceneFadeIn;
+    private bool CoroFading;
     private void Start()
     {
         if (_instance != null && _instance != this)
@@ -31,6 +32,8 @@ public class SceneTransitioner : MonoBehaviour
 
         PauseMenu.OnLeaveGame += ReturnToMain;
         DontDestroyOnLoad(gameObject);
+
+        GameSceneFadeIn = false;
     }
 
     private void ReturnToMain(object sender, System.EventArgs e)
@@ -43,9 +46,10 @@ public class SceneTransitioner : MonoBehaviour
         if (SceneManager.GetActiveScene().buildIndex == 1)
         {
             //Fade in from Update Loop
-            FadeColor = _FadeBlackImage.color;
 
             MainMenu.OnMainGameEnter -= OnLoadGameScene;
+            FadeColor.a = 1;
+            _FadeBlackImage.color = FadeColor;
 
             GameSceneFadeIn = true;
         }
@@ -68,6 +72,8 @@ public class SceneTransitioner : MonoBehaviour
 
     private IEnumerator LoadSceneTransitionTo(int sceneIndex)
     {
+        GameSceneFadeIn = false;
+        CoroFading = true;
         FadeColor.a = 0.0f;
         _FadeBlackImage.color = FadeColor;
 
@@ -85,11 +91,18 @@ public class SceneTransitioner : MonoBehaviour
             yield return null;
         }
 
+        CoroFading = false;
+        GameSceneFadeIn = true;
         yield return null;
     }
 
     private void Update()
     {
+        if (CoroFading)
+        {
+            return;
+        }
+
         if (GameSceneFadeIn)
         {
             if (_FadeBlackImage.color.a > 0)

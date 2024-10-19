@@ -91,7 +91,7 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
     public event EventHandler OnHickySwitch;
     public static event EventHandler OnRetalHit;
     public static event EventHandler OnAttackLowHealth;
-    public static event EventHandler OnAttackStatic;
+    public static event EventHandler<bool> OnAttackStatic;
     public static event EventHandler OnAttackRelease;
     public static event EventHandler OnDeath;
 
@@ -721,7 +721,6 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
     {
         CloseMap();
         OnAttacked?.Invoke(this, p);
-        OnAttackStatic?.Invoke(this, EventArgs.Empty);
 
         if ( (_healthComponent.Health / _healthComponent.MaxHealth) <= 0.3f)
         {
@@ -739,6 +738,8 @@ public class PlayerController : MonoBehaviour, IHideable, ICompActivate, IVulner
         {
             AttackingFromFront = false;
         }
+
+        OnAttackStatic?.Invoke(this, AttackingFromFront);
 
         Punch.Enable();
         Kick.Enable();

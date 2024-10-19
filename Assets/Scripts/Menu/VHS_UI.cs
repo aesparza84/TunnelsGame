@@ -31,6 +31,7 @@ public class VHS_UI : MonoBehaviour
     [SerializeField] private GameObject DeathStatsObj;
     [SerializeField] private TextMeshProUGUI FinalTime;
     [SerializeField] private TextMeshProUGUI FinalCheeseCount;
+    [SerializeField] private TextMeshProUGUI EngagementText;
 
     //values
     private int minutes;
@@ -40,19 +41,60 @@ public class VHS_UI : MonoBehaviour
     //Elapsed time
     private float totalTime;
     private bool TickTime;
+    private bool initStart;
 
     public static event EventHandler<CurrentRuntTime> SendTime;
     private void Start()
     {
         LevelMessanger.GameLoopStopped += DeathEvents;
+        LevelMessanger.GameLoopStopped += StopEngagment;
 
         PauseMenu.OnPause += OnPause;
         PauseMenu.OnResume += OnResume;
 
-        ScoreKeepr.DeathStats += GetDeathStats;
 
         SceneManager.activeSceneChanged += ThisSceneInit;
-        SceneManager.sceneLoaded += BeginTimer;
+        LevelMessanger.LevelStart += BeginTImer;
+
+
+        PlayerController.OnAttackStatic += Engagement;
+        PlayerController.OnAttackRelease += StopEngagment;
+        ScoreKeepr.DeathStats += GetDeathStats;
+
+
+    }
+
+    private void BeginTImer(object sender, EventArgs e)
+    {
+        if (!initStart)
+        {
+            DeathStatsObj.SetActive(false);
+
+            ResetValues();
+            TickTime = true;
+
+            initStart = true;
+        }
+        
+    }
+
+    private void StopEngagment(object sender, EventArgs e)
+    {
+        EngagementText.gameObject.SetActive(false);
+    }
+
+    private void Engagement(object sender, bool e)
+    {
+        if (e)
+        {
+            EngagementText.text = "INPUT: F";
+        }
+        else
+        {
+            EngagementText.text = "INPUT: SPACE";
+        }
+
+        EngagementText.gameObject.SetActive(true);
     }
 
     private void GetDeathStats(object sender, Tuple<CurrentRuntTime, int> e)
@@ -61,14 +103,6 @@ public class VHS_UI : MonoBehaviour
     }
 
     private void ThisSceneInit(Scene arg0, Scene arg1)
-    {
-        ResetValues();
-        DeathStatsObj.SetActive(false);
-
-        ResetValues();
-        TickTime = true;
-    }
-    private void BeginTimer(Scene arg0, LoadSceneMode arg1)
     {
         ResetValues();
         DeathStatsObj.SetActive(false);
@@ -123,14 +157,18 @@ public class VHS_UI : MonoBehaviour
     private void OnDisable()
     {
         LevelMessanger.GameLoopStopped -= DeathEvents;
+        LevelMessanger.GameLoopStopped -= StopEngagment;
 
         PauseMenu.OnPause -= OnPause;
         PauseMenu.OnResume -= OnResume;
 
-        ScoreKeepr.DeathStats -= GetDeathStats;
 
         SceneManager.activeSceneChanged -= ThisSceneInit;
-        SceneManager.sceneLoaded -= BeginTimer;
+        LevelMessanger.LevelStart -= BeginTImer;
+
+        PlayerController.OnAttackStatic -= Engagement;
+        PlayerController.OnAttackRelease -= StopEngagment;
+        ScoreKeepr.DeathStats -= GetDeathStats;
     }
 
 }

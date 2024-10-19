@@ -27,7 +27,7 @@ public class DialogueUI : MonoBehaviour
         StartCoroutine(ActivateDeactivateText(_WorldDialogueText));
     }
 
-    private void OnAttackDialogue(object sender, System.EventArgs e)
+    private void OnAttackDialogue(object sender, bool e)
     {
         StopAllCoroutines();
         StartCoroutine(DisplayText(AttackDial));

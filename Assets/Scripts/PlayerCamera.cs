@@ -289,7 +289,7 @@ public class PlayerCamera : MonoBehaviour
                                                               0.8f);
             }
 
-            _cameraTransform.localRotation = Quaternion.Lerp(_cameraTransform.localRotation, Quaternion.Euler(TargetForwardEuler), LeanSpeed);
+            _cameraTransform.localRotation = Quaternion.Lerp(_cameraTransform.localRotation, Quaternion.Euler(TargetForwardEuler), LeanSpeed * Time.deltaTime);
 
             if (_cameraTransform.localRotation == Quaternion.Euler(TargetForwardEuler))
             {
@@ -305,7 +305,7 @@ public class PlayerCamera : MonoBehaviour
 
     private void SetBackLean(Vector3 euler)
     {
-        _cameraTransform.localRotation = Quaternion.Lerp(_cameraTransform.localRotation, Quaternion.Euler(euler), BackLeanSpeed);
+        _cameraTransform.localRotation = Quaternion.Lerp(_cameraTransform.localRotation, Quaternion.Euler(euler), BackLeanSpeed * Time.deltaTime);
 
         _cameraTransform.localPosition = Vector3.Lerp(_cameraTransform.localPosition, new Vector3(_cameraTransform.localPosition.x,
                                                                                                   _cameraTransform.localPosition.y,

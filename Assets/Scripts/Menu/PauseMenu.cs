@@ -113,10 +113,8 @@ public class PauseMenu : MonoBehaviour
     public void ExitToMainMenu()
     {
         //Load Main Menu Scene
-        Time.timeScale = 1;
-        SceneManager.LoadScene(0);
-
         OnLeaveGame?.Invoke(this, EventArgs.Empty);
+        Time.timeScale = 1;
     }
 
     private void OnDisable()
